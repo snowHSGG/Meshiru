@@ -96,6 +96,46 @@
   margin-top: 0.5rem;
 }
 
+.datetime-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.datetime-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.datetime-label {
+  font-size: 0.72rem;
+  color: #666;
+  letter-spacing: 0.05em;
+}
+
+.datetime-input {
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  color: #f0f0f0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  color-scheme: dark;
+}
+
+.datetime-input:focus {
+  border-color: #f0f0f0;
+}
+
+.datetime-input option {
+  background: #1a1a1a;
+  color: #f0f0f0;
+}
+
 .search-btn {
   align-self: flex-start;
   padding: 0.8rem 3rem;

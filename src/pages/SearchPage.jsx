@@ -6,8 +6,11 @@ const GENRES = ['和食', 'イタリアン', '中華', '焼肉', 'ラーメン',
 const PREFERENCES = ['コスパ重視', '雰囲気重視', '接客重視', '一人OK', '個室あり', '記念日向け']
 const SCENES = ['デート', '接待', '友人と', '一人飯', '家族と']
 const BUDGETS = ['〜1000円', '1000〜3000円', '3000〜6000円', '6000円〜']
-
 const MEAL_TIMES = ['ランチ', 'ディナー']
+const HOURS = Array.from({ length: 16 }, (_, i) => {
+  const h = i + 9
+  return `${h}:00`
+})
 
 const AREAS = [
   { label: '渋谷・原宿', lat: 35.6580, lng: 139.7016 },
@@ -21,6 +24,10 @@ const AREAS = [
   { label: '恵比寿・代官山', lat: 35.6467, lng: 139.7100 },
 ]
 
+function todayStr() {
+  return new Date().toISOString().slice(0, 10)
+}
+
 export default function SearchPage() {
   const navigate = useNavigate()
   const [genre, setGenre] = useState('')
@@ -28,7 +35,9 @@ export default function SearchPage() {
   const [scene, setScene] = useState('')
   const [budget, setBudget] = useState('')
   const [mealTime, setMealTime] = useState('')
-  const [locMode, setLocMode] = useState('area') // 'current' | 'area'
+  const [visitDate, setVisitDate] = useState(todayStr())
+  const [visitTime, setVisitTime] = useState('')
+  const [locMode, setLocMode] = useState('area')
   const [area, setArea] = useState(null)
   const [geoError, setGeoError] = useState('')
   const [geoLoading, setGeoLoading] = useState(false)
@@ -56,7 +65,7 @@ export default function SearchPage() {
 
   function handleSearch() {
     navigate('/results', {
-      state: { genre, preferences, scene, budget, mealTime, locMode, area },
+      state: { genre, preferences, scene, budget, mealTime, visitDate, visitTime, locMode, area },
     })
   }
 
@@ -76,15 +85,11 @@ export default function SearchPage() {
             <button
               className={`loc-btn ${locMode === 'current' ? 'active' : ''}`}
               onClick={switchToCurrentLocation}
-            >
-              現在地を使う
-            </button>
+            >現在地を使う</button>
             <button
               className={`loc-btn ${locMode === 'area' ? 'active' : ''}`}
               onClick={() => { setLocMode('area'); setGeoError('') }}
-            >
-              エリアを選ぶ
-            </button>
+            >エリアを選ぶ</button>
           </div>
           {geoLoading && <p className="geo-status">位置情報を取得中...</p>}
           {geoError && <p className="geo-error">{geoError}</p>}
@@ -104,7 +109,37 @@ export default function SearchPage() {
           )}
         </section>
 
-        {/* ランチ・ディナー */}
+        {/* 来店日時 */}
+        <section className="filter-section">
+          <h2 className="filter-label">来店日時</h2>
+          <div className="datetime-row">
+            <div className="datetime-field">
+              <label className="datetime-label">日付</label>
+              <input
+                className="datetime-input"
+                type="date"
+                value={visitDate}
+                min={todayStr()}
+                onChange={(e) => setVisitDate(e.target.value)}
+              />
+            </div>
+            <div className="datetime-field">
+              <label className="datetime-label">時間</label>
+              <select
+                className="datetime-input"
+                value={visitTime}
+                onChange={(e) => setVisitTime(e.target.value)}
+              >
+                <option value="">指定なし</option>
+                {HOURS.map((h) => (
+                  <option key={h} value={h}>{h}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </section>
+
+        {/* 時間帯 */}
         <section className="filter-section">
           <h2 className="filter-label">時間帯</h2>
           <div className="chips">

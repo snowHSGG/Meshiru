@@ -34,6 +34,12 @@
   color: #f0f0f0;
 }
 
+.visit-datetime {
+  font-size: 0.85rem;
+  color: #666;
+  letter-spacing: 0.05em;
+}
+
 .results-status {
   color: #555;
   font-size: 0.95rem;

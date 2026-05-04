@@ -15,6 +15,15 @@ const PRICE_LABELS = {
 
 const RANK_COLORS = ['#c9a227', '#8a8a8a', '#a0522d']
 
+function buildHotpepperUrl(baseUrl, visitDate, visitTime) {
+  if (!baseUrl) return null
+  const params = new URLSearchParams()
+  if (visitDate) params.set('vd', visitDate.replace(/-/g, ''))
+  if (visitTime) params.set('vt', visitTime.replace(':', ''))
+  const query = params.toString()
+  return query ? `${baseUrl}?${query}` : baseUrl
+}
+
 export default function ResultsPage() {
   const navigate = useNavigate()
   const { state } = useLocation()
@@ -22,6 +31,8 @@ export default function ResultsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selected, setSelected] = useState(null)
+  const visitDate = state?.visitDate ?? ''
+  const visitTime = state?.visitTime ?? ''
 
   useEffect(() => {
     searchRestaurants(state ?? {})
@@ -43,6 +54,11 @@ export default function ResultsPage() {
           <h1 className="results-title">おすすめ 3 選</h1>
           <button className="back-btn" onClick={() => navigate('/search')}>← 条件を変える</button>
         </div>
+        {(visitDate || visitTime) && (
+          <p className="visit-datetime">
+            {visitDate && `📅 ${visitDate}`}{visitTime && `　🕐 ${visitTime}`}
+          </p>
+        )}
 
         {loading && <p className="results-status">検索中...</p>}
         {error && <p className="results-status">{error}</p>}
@@ -111,7 +127,12 @@ export default function ResultsPage() {
                 <p className="card-address">{place.formattedAddress}</p>
                 <div className="card-links">
                   {place.hotpepperUrl && (
-                    <a className="card-link card-link-reserve" href={place.hotpepperUrl} target="_blank" rel="noreferrer">
+                    <a
+                      className="card-link card-link-reserve"
+                      href={buildHotpepperUrl(place.hotpepperUrl, visitDate, visitTime)}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       ホットペッパーで予約 →
                     </a>
                   )}
