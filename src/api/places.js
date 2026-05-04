@@ -47,15 +47,38 @@ async function fetchGoogle({ query, priceLevel, center }) {
         'places.websiteUri',
         'places.googleMapsUri',
         'places.photos',
+        'places.servesDinner',
+        'places.servesLunch',
       ].join(','),
     },
     body: JSON.stringify(body),
   })
 
   const data = await res.json()
-  return (data.places ?? []).filter(
-    (p) => p.rating >= 3.5 && (p.userRatingCount ?? 0) >= 20
-  )
+  return (data.places ?? []).filter((p) => {
+    if (p.rating < 3.5) return false
+    if ((p.userRatingCount ?? 0) < 20) return false
+
+    // 食事を提供しない店（ドリンクのみ）を除外
+    // servesDinner・servesLunch 両方が明示的に false の場合のみ除外
+    if (p.servesDinner === false && p.servesLunch === false) return false
+
+    // 予算フィルタ: priceLevel データがある場合のみ照合
+    if (priceLevel && p.priceLevel && p.priceLevel !== priceLevel) {
+      // 隣接する価格帯は許容（完全一致だと結果が0になりやすい）
+      const levels = [
+        'PRICE_LEVEL_INEXPENSIVE',
+        'PRICE_LEVEL_MODERATE',
+        'PRICE_LEVEL_EXPENSIVE',
+        'PRICE_LEVEL_VERY_EXPENSIVE',
+      ]
+      const selected = levels.indexOf(priceLevel)
+      const actual = levels.indexOf(p.priceLevel)
+      if (Math.abs(selected - actual) > 1) return false
+    }
+
+    return true
+  })
 }
 
 function mergeResults(googlePlaces, hotpepperShops) {
