@@ -103,11 +103,18 @@ export default function ResultsPage() {
                     <span className="card-type">{place.primaryTypeDisplayName.text}</span>
                   )}
                 </div>
-                {place.editorialSummary && (
-                  <p className="card-summary">{place.editorialSummary.text}</p>
+                {(place.editorialSummary || place.hotpepperCatch) && (
+                  <p className="card-summary">
+                    {place.editorialSummary?.text ?? place.hotpepperCatch}
+                  </p>
                 )}
                 <p className="card-address">{place.formattedAddress}</p>
                 <div className="card-links">
+                  {place.hotpepperUrl && (
+                    <a className="card-link card-link-reserve" href={place.hotpepperUrl} target="_blank" rel="noreferrer">
+                      ホットペッパーで予約 →
+                    </a>
+                  )}
                   {place.websiteUri && (
                     <a className="card-link" href={place.websiteUri} target="_blank" rel="noreferrer">
                       公式サイト →

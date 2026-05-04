@@ -1,3 +1,5 @@
+import { searchHotpepper } from './hotpepper'
+
 const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY
 
 export async function searchRestaurants({ genre, preferences, scene, budget, mealTime, locMode, area }) {
@@ -5,6 +7,15 @@ export async function searchRestaurants({ genre, preferences, scene, budget, mea
   const priceLevel = budgetToPriceLevel(budget)
   const center = await resolveCenter({ locMode, area })
 
+  const [googleResults, hotpepperResults] = await Promise.all([
+    fetchGoogle({ query, priceLevel, center }),
+    searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, mealTime }),
+  ])
+
+  return mergeResults(googleResults, hotpepperResults)
+}
+
+async function fetchGoogle({ query, priceLevel, center }) {
   const body = {
     textQuery: `${query || '飲食店'}`,
     languageCode: 'ja',
@@ -42,10 +53,34 @@ export async function searchRestaurants({ genre, preferences, scene, budget, mea
   })
 
   const data = await res.json()
-  const places = data.places ?? []
+  return (data.places ?? []).filter(
+    (p) => p.rating >= 3.5 && (p.userRatingCount ?? 0) >= 20
+  )
+}
 
-  return places
-    .filter((p) => p.rating >= 3.5 && (p.userRatingCount ?? 0) >= 20)
+function mergeResults(googlePlaces, hotpepperShops) {
+  const merged = googlePlaces.map((place) => {
+    const name = place.displayName?.text ?? ''
+    const lat = place.location?.latitude
+    const lng = place.location?.longitude
+
+    // 名前または距離が近いHotPepperの店舗とマッチング
+    const matched = hotpepperShops.find((hp) => {
+      const sameName = hp.name.includes(name.slice(0, 4)) || name.includes(hp.name.slice(0, 4))
+      const nearby = lat && lng
+        ? Math.abs(hp.lat - lat) < 0.001 && Math.abs(hp.lng - lng) < 0.001
+        : false
+      return sameName || nearby
+    })
+
+    return {
+      ...place,
+      hotpepperUrl: matched?.reserveUrl ?? null,
+      hotpepperCatch: matched?.catch ?? null,
+    }
+  })
+
+  return merged
     .sort((a, b) => b.rating - a.rating)
     .slice(0, 3)
 }
@@ -55,12 +90,12 @@ async function resolveCenter({ locMode, area }) {
     return new Promise((resolve) => {
       navigator.geolocation.getCurrentPosition(
         (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => resolve({ lat: 35.6762, lng: 139.6503 }) // 失敗時は東京中心
+        () => resolve({ lat: 35.6762, lng: 139.6503 })
       )
     })
   }
   if (area) return { lat: area.lat, lng: area.lng }
-  return { lat: 35.6762, lng: 139.6503 } // デフォルト: 東京中心
+  return { lat: 35.6762, lng: 139.6503 }
 }
 
 export function getPhotoUrl(photoName) {

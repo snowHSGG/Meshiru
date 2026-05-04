@@ -172,6 +172,15 @@
   color: #7abf7a;
 }
 
+.card-link-reserve {
+  color: #e8613a;
+  font-weight: 500;
+}
+
+.card-link-reserve:hover {
+  color: #f08060;
+}
+
 .map-wrapper {
   width: 100%;
   height: 300px;
