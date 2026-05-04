@@ -123,3 +123,39 @@
   font-size: 0.8rem;
   color: #555;
 }
+
+.card-selected {
+  border-color: #444;
+}
+
+.card-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.25rem;
+}
+
+.card-link {
+  font-size: 0.8rem;
+  color: #888;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.card-link:hover {
+  color: #f0f0f0;
+}
+
+.card-link-maps {
+  color: #5a8a5a;
+}
+
+.card-link-maps:hover {
+  color: #7abf7a;
+}
+
+.map-wrapper {
+  width: 100%;
+  height: 300px;
+  border: 1px solid #1f1f1f;
+  overflow: hidden;
+}
