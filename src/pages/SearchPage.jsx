@@ -7,12 +7,28 @@ const PREFERENCES = ['コスパ重視', '雰囲気重視', '接客重視', '一�
 const SCENES = ['デート', '接待', '友人と', '一人飯', '家族と']
 const BUDGETS = ['〜1000円', '1000〜3000円', '3000〜6000円', '6000円〜']
 
+const AREAS = [
+  { label: '渋谷・原宿', lat: 35.6580, lng: 139.7016 },
+  { label: '新宿',       lat: 35.6938, lng: 139.7034 },
+  { label: '銀座・有楽町', lat: 35.6717, lng: 139.7649 },
+  { label: '六本木',     lat: 35.6628, lng: 139.7315 },
+  { label: '池袋',       lat: 35.7295, lng: 139.7109 },
+  { label: '上野・浅草', lat: 35.7141, lng: 139.7774 },
+  { label: '秋葉原',     lat: 35.7022, lng: 139.7741 },
+  { label: '表参道',     lat: 35.6653, lng: 139.7127 },
+  { label: '恵比寿・代官山', lat: 35.6467, lng: 139.7100 },
+]
+
 export default function SearchPage() {
   const navigate = useNavigate()
   const [genre, setGenre] = useState('')
   const [preferences, setPreferences] = useState([])
   const [scene, setScene] = useState('')
   const [budget, setBudget] = useState('')
+  const [locMode, setLocMode] = useState('area') // 'current' | 'area'
+  const [area, setArea] = useState(null)
+  const [geoError, setGeoError] = useState('')
+  const [geoLoading, setGeoLoading] = useState(false)
 
   function togglePreference(p) {
     setPreferences((prev) =>
@@ -20,8 +36,25 @@ export default function SearchPage() {
     )
   }
 
+  function switchToCurrentLocation() {
+    setLocMode('current')
+    setArea(null)
+    setGeoError('')
+    setGeoLoading(true)
+    navigator.geolocation.getCurrentPosition(
+      () => setGeoLoading(false),
+      () => {
+        setGeoLoading(false)
+        setGeoError('位置情報の取得に失敗しました。エリアを選択してください。')
+        setLocMode('area')
+      }
+    )
+  }
+
   function handleSearch() {
-    navigate('/results', { state: { genre, preferences, scene, budget } })
+    navigate('/results', {
+      state: { genre, preferences, scene, budget, locMode, area },
+    })
   }
 
   return (
@@ -33,6 +66,42 @@ export default function SearchPage() {
       <main className="search-main">
         <h1 className="search-title">お店を探す</h1>
 
+        {/* エリア */}
+        <section className="filter-section">
+          <h2 className="filter-label">エリア</h2>
+          <div className="loc-toggle">
+            <button
+              className={`loc-btn ${locMode === 'current' ? 'active' : ''}`}
+              onClick={switchToCurrentLocation}
+            >
+              現在地を使う
+            </button>
+            <button
+              className={`loc-btn ${locMode === 'area' ? 'active' : ''}`}
+              onClick={() => { setLocMode('area'); setGeoError('') }}
+            >
+              エリアを選ぶ
+            </button>
+          </div>
+          {geoLoading && <p className="geo-status">位置情報を取得中...</p>}
+          {geoError && <p className="geo-error">{geoError}</p>}
+          {locMode === 'current' && !geoLoading && !geoError && (
+            <p className="geo-status">現在地を使用します</p>
+          )}
+          {locMode === 'area' && (
+            <div className="chips" style={{ marginTop: '0.75rem' }}>
+              {AREAS.map((a) => (
+                <button
+                  key={a.label}
+                  className={`chip ${area?.label === a.label ? 'active' : ''}`}
+                  onClick={() => setArea(area?.label === a.label ? null : a)}
+                >{a.label}</button>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* ジャンル */}
         <section className="filter-section">
           <h2 className="filter-label">料理ジャンル</h2>
           <div className="chips">

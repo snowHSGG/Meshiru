@@ -61,6 +61,41 @@
   background: #f0f0f0;
 }
 
+.loc-toggle {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.loc-btn {
+  padding: 0.45rem 1.25rem;
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  color: #aaa;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.loc-btn.active {
+  border-color: #f0f0f0;
+  color: #0f0f0f;
+  background: #f0f0f0;
+}
+
+.geo-status {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
+.geo-error {
+  font-size: 0.8rem;
+  color: #a05050;
+  margin-top: 0.5rem;
+}
+
 .search-btn {
   align-self: flex-start;
   padding: 0.8rem 3rem;

@@ -1,18 +1,18 @@
 const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY
 
-export async function searchRestaurants({ genre, preferences, scene, budget }) {
+export async function searchRestaurants({ genre, preferences, scene, budget, locMode, area }) {
   const query = buildQuery({ genre, preferences, scene })
-
   const priceLevel = budgetToPriceLevel(budget)
+  const center = await resolveCenter({ locMode, area })
 
   const body = {
-    textQuery: `東京 ${query} レストラン`,
+    textQuery: `${query || '飲食店'} レストラン`,
     languageCode: 'ja',
     maxResultCount: 10,
     locationBias: {
       circle: {
-        center: { latitude: 35.6762, longitude: 139.6503 },
-        radius: 15000.0,
+        center: { latitude: center.lat, longitude: center.lng },
+        radius: 2000.0,
       },
     },
     ...(priceLevel ? { priceLevels: [priceLevel] } : {}),
@@ -48,12 +48,25 @@ export async function searchRestaurants({ genre, preferences, scene, budget }) {
     .slice(0, 3)
 }
 
+async function resolveCenter({ locMode, area }) {
+  if (locMode === 'current') {
+    return new Promise((resolve) => {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => resolve({ lat: 35.6762, lng: 139.6503 }) // 失敗時は東京中心
+      )
+    })
+  }
+  if (area) return { lat: area.lat, lng: area.lng }
+  return { lat: 35.6762, lng: 139.6503 } // デフォルト: 東京中心
+}
+
 function buildQuery({ genre, preferences, scene }) {
   const parts = []
   if (genre) parts.push(genre)
   if (scene) parts.push(scene)
-  if (preferences.includes('コスパ重視')) parts.push('コスパ')
-  if (preferences.includes('個室あり')) parts.push('個室')
+  if (preferences?.includes('コスパ重視')) parts.push('コスパ')
+  if (preferences?.includes('個室あり')) parts.push('個室')
   return parts.join(' ')
 }
 
