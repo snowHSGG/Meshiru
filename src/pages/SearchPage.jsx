@@ -7,6 +7,8 @@ const PREFERENCES = ['コスパ重視', '雰囲気重視', '接客重視', '一�
 const SCENES = ['デート', '接待', '友人と', '一人飯', '家族と']
 const BUDGETS = ['〜1000円', '1000〜3000円', '3000〜6000円', '6000円〜']
 
+const MEAL_TIMES = ['ランチ', 'ディナー']
+
 const AREAS = [
   { label: '渋谷・原宿', lat: 35.6580, lng: 139.7016 },
   { label: '新宿',       lat: 35.6938, lng: 139.7034 },
@@ -25,6 +27,7 @@ export default function SearchPage() {
   const [preferences, setPreferences] = useState([])
   const [scene, setScene] = useState('')
   const [budget, setBudget] = useState('')
+  const [mealTime, setMealTime] = useState('')
   const [locMode, setLocMode] = useState('area') // 'current' | 'area'
   const [area, setArea] = useState(null)
   const [geoError, setGeoError] = useState('')
@@ -53,7 +56,7 @@ export default function SearchPage() {
 
   function handleSearch() {
     navigate('/results', {
-      state: { genre, preferences, scene, budget, locMode, area },
+      state: { genre, preferences, scene, budget, mealTime, locMode, area },
     })
   }
 
@@ -99,6 +102,20 @@ export default function SearchPage() {
               ))}
             </div>
           )}
+        </section>
+
+        {/* ランチ・ディナー */}
+        <section className="filter-section">
+          <h2 className="filter-label">時間帯</h2>
+          <div className="chips">
+            {MEAL_TIMES.map((m) => (
+              <button
+                key={m}
+                className={`chip ${mealTime === m ? 'active' : ''}`}
+                onClick={() => setMealTime(mealTime === m ? '' : m)}
+              >{m}</button>
+            ))}
+          </div>
         </section>
 
         {/* ジャンル */}

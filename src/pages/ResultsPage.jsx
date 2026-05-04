@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { APIProvider, Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps'
-import { searchRestaurants } from '../api/places'
+import { searchRestaurants, getPhotoUrl } from '../api/places'
 import '../styles/ResultsPage.css'
 
 const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY
@@ -82,6 +82,14 @@ export default function ResultsPage() {
               className={`card ${selected === i ? 'card-selected' : ''}`}
               onClick={() => setSelected(i)}
             >
+              {place.photos?.[0] && (
+                <img
+                  className="card-photo"
+                  src={getPhotoUrl(place.photos[0].name)}
+                  alt={place.displayName?.text}
+                />
+              )}
+              <div className="card-inner">
               <div className="card-rank">#{i + 1}</div>
               <div className="card-body">
                 <h2 className="card-name">{place.displayName?.text}</h2>
@@ -111,6 +119,7 @@ export default function ResultsPage() {
                     </a>
                   )}
                 </div>
+              </div>
               </div>
             </div>
           ))}

@@ -1,7 +1,7 @@
 const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY
 
-export async function searchRestaurants({ genre, preferences, scene, budget, locMode, area }) {
-  const query = buildQuery({ genre, preferences, scene })
+export async function searchRestaurants({ genre, preferences, scene, budget, mealTime, locMode, area }) {
+  const query = buildQuery({ genre, preferences, scene, mealTime })
   const priceLevel = budgetToPriceLevel(budget)
   const center = await resolveCenter({ locMode, area })
 
@@ -34,6 +34,7 @@ export async function searchRestaurants({ genre, preferences, scene, budget, loc
         'places.location',
         'places.websiteUri',
         'places.googleMapsUri',
+        'places.photos',
       ].join(','),
     },
     body: JSON.stringify(body),
@@ -61,9 +62,14 @@ async function resolveCenter({ locMode, area }) {
   return { lat: 35.6762, lng: 139.6503 } // デフォルト: 東京中心
 }
 
-function buildQuery({ genre, preferences, scene }) {
+export function getPhotoUrl(photoName) {
+  return `https://places.googleapis.com/v1/${photoName}/media?maxHeightPx=400&maxWidthPx=800&key=${API_KEY}`
+}
+
+function buildQuery({ genre, preferences, scene, mealTime }) {
   const parts = []
   if (genre) parts.push(genre)
+  if (mealTime) parts.push(mealTime)
   if (scene) parts.push(scene)
   if (preferences?.includes('コスパ重視')) parts.push('コスパ')
   if (preferences?.includes('個室あり')) parts.push('個室')
