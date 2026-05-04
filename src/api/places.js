@@ -1,0 +1,65 @@
+const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY
+
+export async function searchRestaurants({ genre, preferences, scene, budget }) {
+  const query = buildQuery({ genre, preferences, scene })
+
+  const priceLevel = budgetToPriceLevel(budget)
+
+  const body = {
+    textQuery: `東京 ${query} レストラン`,
+    languageCode: 'ja',
+    maxResultCount: 10,
+    locationBias: {
+      circle: {
+        center: { latitude: 35.6762, longitude: 139.6503 },
+        radius: 15000.0,
+      },
+    },
+    ...(priceLevel ? { priceLevels: [priceLevel] } : {}),
+  }
+
+  const res = await fetch('https://places.googleapis.com/v1/places:searchText', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Goog-Api-Key': API_KEY,
+      'X-Goog-FieldMask': [
+        'places.displayName',
+        'places.rating',
+        'places.userRatingCount',
+        'places.formattedAddress',
+        'places.priceLevel',
+        'places.editorialSummary',
+        'places.primaryTypeDisplayName',
+      ].join(','),
+    },
+    body: JSON.stringify(body),
+  })
+
+  const data = await res.json()
+  const places = data.places ?? []
+
+  return places
+    .filter((p) => p.rating >= 3.5)
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, 3)
+}
+
+function buildQuery({ genre, preferences, scene }) {
+  const parts = []
+  if (genre) parts.push(genre)
+  if (scene) parts.push(scene)
+  if (preferences.includes('コスパ重視')) parts.push('コスパ')
+  if (preferences.includes('個室あり')) parts.push('個室')
+  return parts.join(' ')
+}
+
+function budgetToPriceLevel(budget) {
+  const map = {
+    '〜1000円': 'PRICE_LEVEL_INEXPENSIVE',
+    '1000〜3000円': 'PRICE_LEVEL_MODERATE',
+    '3000〜6000円': 'PRICE_LEVEL_EXPENSIVE',
+    '6000円〜': 'PRICE_LEVEL_VERY_EXPENSIVE',
+  }
+  return map[budget] ?? null
+}

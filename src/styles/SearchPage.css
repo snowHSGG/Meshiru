@@ -1,0 +1,80 @@
+.search-main {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 2rem 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.search-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #f0f0f0;
+}
+
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.filter-label {
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  color: #888;
+  font-weight: 500;
+}
+
+.filter-note {
+  font-size: 0.7rem;
+  color: #555;
+  margin-left: 0.5rem;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip {
+  padding: 0.45rem 1rem;
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  color: #aaa;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.chip:hover {
+  border-color: #555;
+  color: #f0f0f0;
+}
+
+.chip.active {
+  border-color: #f0f0f0;
+  color: #0f0f0f;
+  background: #f0f0f0;
+}
+
+.search-btn {
+  align-self: flex-start;
+  padding: 0.8rem 3rem;
+  background: #f0f0f0;
+  color: #0f0f0f;
+  border: none;
+  font-size: 1rem;
+  font-family: inherit;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.search-btn:hover {
+  opacity: 0.85;
+}
