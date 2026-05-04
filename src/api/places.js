@@ -6,9 +6,10 @@ export async function searchRestaurants({ genre, preferences, scene, budget, mea
   const center = await resolveCenter({ locMode, area })
 
   const body = {
-    textQuery: `${query || '飲食店'} レストラン`,
+    textQuery: `${query || '飲食店'}`,
     languageCode: 'ja',
-    maxResultCount: 10,
+    maxResultCount: 20,
+    includedType: 'restaurant',
     locationBias: {
       circle: {
         center: { latitude: center.lat, longitude: center.lng },
@@ -44,7 +45,7 @@ export async function searchRestaurants({ genre, preferences, scene, budget, mea
   const places = data.places ?? []
 
   return places
-    .filter((p) => p.rating >= 3.5)
+    .filter((p) => p.rating >= 3.5 && (p.userRatingCount ?? 0) >= 20)
     .sort((a, b) => b.rating - a.rating)
     .slice(0, 3)
 }
