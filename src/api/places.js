@@ -129,6 +129,7 @@ function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax, partyS
       ...place,
       hotpepperUrl: matched?.reserveUrl ?? null,
       hotpepperCatch: matched?.catch ?? null,
+      hotpepperBudget: matched?.budget ?? null,
       priceVerified: !!matched,
     }
   }).filter(Boolean)

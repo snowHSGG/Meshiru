@@ -15,6 +15,13 @@ const PRICE_LABELS = {
   PRICE_LEVEL_VERY_EXPENSIVE: '¥¥¥¥',
 }
 
+const GOOGLE_PRICE_RANGE = {
+  PRICE_LEVEL_INEXPENSIVE:    '〜¥1,000',
+  PRICE_LEVEL_MODERATE:       '¥1,000〜¥3,000',
+  PRICE_LEVEL_EXPENSIVE:      '¥3,000〜¥6,000',
+  PRICE_LEVEL_VERY_EXPENSIVE: '¥6,000〜',
+}
+
 const RANK_COLORS = ['#c9a227', '#8a8a8a', '#a0522d']
 
 function buildHotpepperUrl(baseUrl, visitDate, visitTime) {
@@ -30,7 +37,6 @@ export default function ResultsPage() {
   const navigate = useNavigate()
   const { state } = useLocation()
 
-  // Filter state — initialized from navigation state
   const [genre, setGenre] = useState(state?.genre ?? '')
   const [preferences, setPreferences] = useState(state?.preferences ?? [])
   const [scene, setScene] = useState(state?.scene ?? '')
@@ -46,7 +52,6 @@ export default function ResultsPage() {
   const [geoError, setGeoError] = useState('')
   const [geoLoading, setGeoLoading] = useState(false)
 
-  // Results state
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -91,17 +96,21 @@ export default function ResultsPage() {
     )
   }
 
-  const hasMap = results.some((p) => p.location)
+  const mapCenter = results[0]?.location
+    ? { lat: results[0].location.latitude, lng: results[0].location.longitude }
+    : { lat: 35.6762, lng: 139.6503 }
+
+  const mapKey = results.map((r) => r.googleMapsUri).join(',')
 
   return (
-    <div className="page results-page">
+    <div className="page">
       <header className="header">
         <span className="logo" onClick={() => navigate('/')}>Meshiru</span>
       </header>
 
       <div className="results-layout">
 
-        {/* ── サイドバー ── */}
+        {/* ── 左: フィルターサイドバー ── */}
         <aside className="results-sidebar">
 
           <section className="filter-section">
@@ -284,9 +293,8 @@ export default function ResultsPage() {
 
         </aside>
 
-        {/* ── 結果エリア ── */}
+        {/* ── 中央: 結果カード ── */}
         <div className="results-content">
-
           <div className="results-header">
             <h1 className="results-title">おすすめ 3 選</h1>
             <button className="back-btn" onClick={() => navigate('/search')}>最初から</button>
@@ -304,97 +312,102 @@ export default function ResultsPage() {
             <p className="results-status">条件に合うお店が見つかりませんでした。</p>
           )}
 
-          {hasMap && (
-            <div className="map-wrapper">
-              <APIProvider apiKey={API_KEY}>
-                <Map
-                  defaultCenter={{ lat: results[0].location.latitude, lng: results[0].location.longitude }}
-                  defaultZoom={13}
-                  mapId="meshiru-map"
-                  style={{ width: '100%', height: '100%' }}
-                >
-                  {results.map((place, i) => (
-                    place.location && (
-                      <AdvancedMarker
-                        key={i}
-                        position={{ lat: place.location.latitude, lng: place.location.longitude }}
-                        onClick={() => setSelected(i)}
-                      >
-                        <Pin background={RANK_COLORS[i]} borderColor={RANK_COLORS[i]} glyphColor="#fff" />
-                      </AdvancedMarker>
-                    )
-                  ))}
-                </Map>
-              </APIProvider>
-            </div>
-          )}
-
           <div className="cards">
-            {results.map((place, i) => (
-              <div
-                key={i}
-                className={`card ${selected === i ? 'card-selected' : ''}`}
-                onClick={() => setSelected(i)}
-              >
-                {place.photos?.[0] && (
-                  <img
-                    className="card-photo"
-                    src={getPhotoUrl(place.photos[0].name)}
-                    alt={place.displayName?.text}
-                  />
-                )}
-                <div className="card-inner">
-                  <div className="card-rank">#{i + 1}</div>
-                  <div className="card-body">
-                    <h2 className="card-name">{place.displayName?.text}</h2>
-                    <div className="card-meta">
-                      <span className="card-rating">★ {place.rating?.toFixed(1)}</span>
-                      <span className="card-count">({place.userRatingCount?.toLocaleString()}件)</span>
-                      {place.priceLevel && (
-                        <span className="card-price">{PRICE_LABELS[place.priceLevel]}</span>
+            {results.map((place, i) => {
+              const priceRange = place.hotpepperBudget
+                ?? (place.priceLevel ? GOOGLE_PRICE_RANGE[place.priceLevel] : null)
+
+              return (
+                <div
+                  key={i}
+                  className={`card ${selected === i ? 'card-selected' : ''}`}
+                  onClick={() => setSelected(i)}
+                >
+                  {place.photos?.[0] && (
+                    <img
+                      className="card-photo"
+                      src={getPhotoUrl(place.photos[0].name)}
+                      alt={place.displayName?.text}
+                    />
+                  )}
+                  <div className="card-inner">
+                    <div className="card-rank">#{i + 1}</div>
+                    <div className="card-body">
+                      <h2 className="card-name">{place.displayName?.text}</h2>
+                      <div className="card-meta">
+                        <span className="card-rating">★ {place.rating?.toFixed(1)}</span>
+                        <span className="card-count">({place.userRatingCount?.toLocaleString()}件)</span>
+                        {place.primaryTypeDisplayName && (
+                          <span className="card-type">{place.primaryTypeDisplayName.text}</span>
+                        )}
+                        {!place.priceVerified && (
+                          <span className="card-badge-unverified">価格未確認</span>
+                        )}
+                      </div>
+                      {priceRange && (
+                        <p className="card-price-range">{priceRange} / 人</p>
                       )}
-                      {place.primaryTypeDisplayName && (
-                        <span className="card-type">{place.primaryTypeDisplayName.text}</span>
+                      {(place.editorialSummary || place.hotpepperCatch) && (
+                        <p className="card-summary">
+                          {place.editorialSummary?.text ?? place.hotpepperCatch}
+                        </p>
                       )}
-                      {!place.priceVerified && (
-                        <span className="card-badge-unverified">価格未確認</span>
-                      )}
-                    </div>
-                    {(place.editorialSummary || place.hotpepperCatch) && (
-                      <p className="card-summary">
-                        {place.editorialSummary?.text ?? place.hotpepperCatch}
-                      </p>
-                    )}
-                    <p className="card-address">{place.formattedAddress}</p>
-                    <div className="card-links">
-                      {place.hotpepperUrl && (
-                        <a
-                          className="card-link card-link-reserve"
-                          href={buildHotpepperUrl(place.hotpepperUrl, visitDate, visitTime)}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          ホットペッパーで予約 →
-                        </a>
-                      )}
-                      {place.websiteUri && (
-                        <a className="card-link" href={place.websiteUri} target="_blank" rel="noreferrer">
-                          公式サイト →
-                        </a>
-                      )}
-                      {place.googleMapsUri && (
-                        <a className="card-link card-link-maps" href={place.googleMapsUri} target="_blank" rel="noreferrer">
-                          Google Maps →
-                        </a>
-                      )}
+                      <p className="card-address">{place.formattedAddress}</p>
+                      <div className="card-links">
+                        {place.hotpepperUrl && (
+                          <a
+                            className="card-link card-link-reserve"
+                            href={buildHotpepperUrl(place.hotpepperUrl, visitDate, visitTime)}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            ホットペッパーで予約 →
+                          </a>
+                        )}
+                        {place.websiteUri && (
+                          <a className="card-link" href={place.websiteUri} target="_blank" rel="noreferrer">
+                            公式サイト →
+                          </a>
+                        )}
+                        {place.googleMapsUri && (
+                          <a className="card-link card-link-maps" href={place.googleMapsUri} target="_blank" rel="noreferrer">
+                            Google Maps →
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
-
         </div>
+
+        {/* ── 右: 地図（固定表示） ── */}
+        <div className="results-map-panel">
+          <APIProvider apiKey={API_KEY}>
+            <Map
+              key={mapKey}
+              defaultCenter={mapCenter}
+              defaultZoom={14}
+              mapId="meshiru-map"
+              style={{ width: '100%', height: '100%' }}
+            >
+              {results.map((place, i) => (
+                place.location && (
+                  <AdvancedMarker
+                    key={i}
+                    position={{ lat: place.location.latitude, lng: place.location.longitude }}
+                    onClick={() => setSelected(i)}
+                  >
+                    <Pin background={RANK_COLORS[i]} borderColor={RANK_COLORS[i]} glyphColor="#fff" />
+                  </AdvancedMarker>
+                )
+              ))}
+            </Map>
+          </APIProvider>
+        </div>
+
       </div>
     </div>
   )
