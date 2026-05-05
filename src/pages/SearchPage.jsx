@@ -5,7 +5,14 @@ import '../styles/SearchPage.css'
 const GENRES = ['和食', 'イタリアン', '中華', '焼肉', 'ラーメン', '寿司', 'カフェ', '居酒屋']
 const PREFERENCES = ['コスパ重視', '雰囲気重視', '接客重視', '一人OK', '個室あり', '記念日向け']
 const SCENES = ['デート', '接待', '友人と', '一人飯', '家族と']
-const BUDGETS = ['〜1000円', '1000〜3000円', '3000〜6000円', '6000円〜']
+const BUDGET_STEPS = [
+  { label: '1,000円', value: 1000 },
+  { label: '2,000円', value: 2000 },
+  { label: '3,000円', value: 3000 },
+  { label: '5,000円', value: 5000 },
+  { label: '8,000円', value: 8000 },
+  { label: '15,000円', value: 15000 },
+]
 const MEAL_TIMES = ['ランチ', 'ディナー']
 const HOURS = Array.from({ length: 16 }, (_, i) => {
   const h = i + 9
@@ -33,7 +40,8 @@ export default function SearchPage() {
   const [genre, setGenre] = useState('')
   const [preferences, setPreferences] = useState([])
   const [scene, setScene] = useState('')
-  const [budget, setBudget] = useState('')
+  const [budgetMin, setBudgetMin] = useState('')
+  const [budgetMax, setBudgetMax] = useState('')
   const [mealTime, setMealTime] = useState('')
   const [visitDate, setVisitDate] = useState(todayStr())
   const [visitTime, setVisitTime] = useState('')
@@ -65,7 +73,7 @@ export default function SearchPage() {
 
   function handleSearch() {
     navigate('/results', {
-      state: { genre, preferences, scene, budget, mealTime, visitDate, visitTime, locMode, area },
+      state: { genre, preferences, scene, budgetMin, budgetMax, mealTime, visitDate, visitTime, locMode, area },
     })
   }
 
@@ -194,15 +202,37 @@ export default function SearchPage() {
         </section>
 
         <section className="filter-section">
-          <h2 className="filter-label">予算</h2>
-          <div className="chips">
-            {BUDGETS.map((b) => (
-              <button
-                key={b}
-                className={`chip ${budget === b ? 'active' : ''}`}
-                onClick={() => setBudget(budget === b ? '' : b)}
-              >{b}</button>
-            ))}
+          <h2 className="filter-label">予算（1人あたり）</h2>
+          <div className="datetime-row">
+            <div className="datetime-field">
+              <label className="datetime-label">下限</label>
+              <select
+                className="datetime-input"
+                value={budgetMin}
+                onChange={(e) => setBudgetMin(e.target.value)}
+              >
+                <option value="">指定なし</option>
+                {BUDGET_STEPS.map((s) => (
+                  <option key={s.value} value={s.value}>{s.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="datetime-field" style={{ alignSelf: 'flex-end', paddingBottom: '0.55rem', color: '#555', fontSize: '0.85rem' }}>
+              〜
+            </div>
+            <div className="datetime-field">
+              <label className="datetime-label">上限</label>
+              <select
+                className="datetime-input"
+                value={budgetMax}
+                onChange={(e) => setBudgetMax(e.target.value)}
+              >
+                <option value="">上限なし</option>
+                {BUDGET_STEPS.map((s) => (
+                  <option key={s.value} value={s.value}>{s.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </section>
 

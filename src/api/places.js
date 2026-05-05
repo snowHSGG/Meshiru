@@ -2,20 +2,53 @@ import { searchHotpepper } from './hotpepper'
 
 const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY
 
-export async function searchRestaurants({ genre, preferences, scene, budget, mealTime, locMode, area }) {
+// HotPepper budget code → yen range (upper bound)
+const HP_CODE_MAX = {
+  B001: 500, B002: 1000, B003: 1500, B004: 2000, B005: 3000,
+  B006: 4000, B007: 5000, B008: 7000, B009: 10000,
+  B010: 15000, B011: 20000, B012: 30000, B013: Infinity,
+}
+const HP_CODE_MIN = {
+  B001: 0, B002: 501, B003: 1001, B004: 1501, B005: 2001,
+  B006: 3001, B007: 4001, B008: 5001, B009: 7001,
+  B010: 10001, B011: 15001, B012: 20001, B013: 30001,
+}
+
+// Google price level → yen range
+const GOOGLE_LEVEL_RANGE = {
+  PRICE_LEVEL_INEXPENSIVE: [0, 1000],
+  PRICE_LEVEL_MODERATE:    [1001, 3000],
+  PRICE_LEVEL_EXPENSIVE:   [3001, 6000],
+  PRICE_LEVEL_VERY_EXPENSIVE: [6001, Infinity],
+}
+
+function rangesOverlap(lo1, hi1, lo2, hi2) {
+  return lo1 <= hi2 && lo2 <= hi1
+}
+
+function rangeToPriceLevels(min, max) {
+  const lo = min !== '' && min != null ? Number(min) : 0
+  const hi = max !== '' && max != null ? Number(max) : Infinity
+  if (lo === 0 && hi === Infinity) return null
+  return Object.entries(GOOGLE_LEVEL_RANGE)
+    .filter(([, [glo, ghi]]) => rangesOverlap(lo, hi, glo, ghi))
+    .map(([level]) => level)
+}
+
+export async function searchRestaurants({ genre, preferences, scene, budgetMin, budgetMax, mealTime, locMode, area }) {
   const query = buildQuery({ genre, preferences, scene, mealTime })
-  const priceLevel = budgetToPriceLevel(budget)
+  const priceLevels = rangeToPriceLevels(budgetMin, budgetMax)
   const center = await resolveCenter({ locMode, area })
 
   const [googleResults, hotpepperResults] = await Promise.all([
-    fetchGoogle({ query, priceLevel, center }),
+    fetchGoogle({ query, priceLevels, center }),
     searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, mealTime }),
   ])
 
-  return mergeResults(googleResults, hotpepperResults, budget)
+  return mergeResults(googleResults, hotpepperResults, budgetMin, budgetMax)
 }
 
-async function fetchGoogle({ query, priceLevel, center }) {
+async function fetchGoogle({ query, priceLevels, center }) {
   const body = {
     textQuery: `${query || '飲食店'}`,
     languageCode: 'ja',
@@ -27,7 +60,7 @@ async function fetchGoogle({ query, priceLevel, center }) {
         radius: 2000.0,
       },
     },
-    ...(priceLevel ? { priceLevels: [priceLevel] } : {}),
+    ...(priceLevels?.length ? { priceLevels } : {}),
   }
 
   const res = await fetch('https://places.googleapis.com/v1/places:searchText', {
@@ -58,38 +91,15 @@ async function fetchGoogle({ query, priceLevel, center }) {
   return (data.places ?? []).filter((p) => {
     if (p.rating < 3.5) return false
     if ((p.userRatingCount ?? 0) < 20) return false
-
-    // 食事を提供しない店（ドリンクのみ）を除外
-    // servesDinner・servesLunch 両方が明示的に false の場合のみ除外
     if (p.servesDinner === false && p.servesLunch === false) return false
-
-    // 予算フィルタ: priceLevel データがある場合のみ照合
-    if (priceLevel && p.priceLevel && p.priceLevel !== priceLevel) {
-      // 隣接する価格帯は許容（完全一致だと結果が0になりやすい）
-      const levels = [
-        'PRICE_LEVEL_INEXPENSIVE',
-        'PRICE_LEVEL_MODERATE',
-        'PRICE_LEVEL_EXPENSIVE',
-        'PRICE_LEVEL_VERY_EXPENSIVE',
-      ]
-      const selected = levels.indexOf(priceLevel)
-      const actual = levels.indexOf(p.priceLevel)
-      if (Math.abs(selected - actual) > 1) return false
-    }
-
     return true
   })
 }
 
-const BUDGET_CODE_MAP = {
-  '〜1000円': ['B001', 'B002', 'B003'],
-  '1000〜3000円': ['B003', 'B004', 'B005', 'B006'],
-  '3000〜6000円': ['B006', 'B007', 'B008'],
-  '6000円〜': ['B009', 'B010', 'B011', 'B012', 'B013'],
-}
-
-function mergeResults(googlePlaces, hotpepperShops, budget) {
-  const allowedCodes = budget ? BUDGET_CODE_MAP[budget] : null
+function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax) {
+  const lo = budgetMin !== '' && budgetMin != null ? Number(budgetMin) : 0
+  const hi = budgetMax !== '' && budgetMax != null ? Number(budgetMax) : Infinity
+  const hasRange = lo > 0 || hi < Infinity
 
   const merged = googlePlaces.map((place) => {
     const name = place.displayName?.text ?? ''
@@ -104,8 +114,10 @@ function mergeResults(googlePlaces, hotpepperShops, budget) {
       return sameName || nearby
     })
 
-    if (matched && allowedCodes && matched.budgetCode && !allowedCodes.includes(matched.budgetCode)) {
-      return null
+    if (matched && hasRange && matched.budgetCode) {
+      const codeMin = HP_CODE_MIN[matched.budgetCode] ?? 0
+      const codeMax = HP_CODE_MAX[matched.budgetCode] ?? Infinity
+      if (!rangesOverlap(lo, hi, codeMin, codeMax)) return null
     }
 
     return {
@@ -146,14 +158,4 @@ function buildQuery({ genre, preferences, scene, mealTime }) {
   if (preferences?.includes('コスパ重視')) parts.push('コスパ')
   if (preferences?.includes('個室あり')) parts.push('個室')
   return parts.join(' ')
-}
-
-function budgetToPriceLevel(budget) {
-  const map = {
-    '〜1000円': 'PRICE_LEVEL_INEXPENSIVE',
-    '1000〜3000円': 'PRICE_LEVEL_MODERATE',
-    '3000〜6000円': 'PRICE_LEVEL_EXPENSIVE',
-    '6000円〜': 'PRICE_LEVEL_VERY_EXPENSIVE',
-  }
-  return map[budget] ?? null
 }
