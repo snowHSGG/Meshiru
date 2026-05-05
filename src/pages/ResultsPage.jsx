@@ -320,6 +320,13 @@ export default function ResultsPage() {
           {!loading && !error && results.length === 0 && (
             <p className="results-status">条件に合うお店が見つかりませんでした。</p>
           )}
+          {!loading && !error && courseVerifiedOnly && results.length > 0 &&
+            results.every((p) => p.coursePriceVerified !== true) && (
+            <p className="results-status results-status--warn">
+              コース料金を確認できたお店が見つかりませんでした。<br />
+              「コース料金確認済みのみ」を外して再検索してみてください。
+            </p>
+          )}
 
           <div className="cards">
             {results
