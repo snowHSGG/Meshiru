@@ -36,14 +36,14 @@ function rangeToPriceLevels(min, max) {
     .map(([level]) => level)
 }
 
-export async function searchRestaurants({ genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, locMode, area }) {
-  const query = buildQuery({ genre, preferences, scene, mealTime })
+export async function searchRestaurants({ genre, preferences, scene, budgetMin, budgetMax, partySize, orderStyle, mealTime, locMode, area }) {
+  const query = buildQuery({ genre, preferences, scene, mealTime, orderStyle })
   const priceLevels = rangeToPriceLevels(budgetMin, budgetMax)
   const center = await resolveCenter({ locMode, area })
 
   const [googleResults, hotpepperResults] = await Promise.all([
     fetchGoogle({ query, priceLevels, center }),
-    searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, mealTime }),
+    searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, mealTime, orderStyle }),
   ])
 
   return mergeResults(googleResults, hotpepperResults, budgetMin, budgetMax, partySize)
@@ -155,12 +155,14 @@ export function getPhotoUrl(photoName) {
   return `https://places.googleapis.com/v1/${photoName}/media?maxHeightPx=400&maxWidthPx=800&key=${API_KEY}`
 }
 
-function buildQuery({ genre, preferences, scene, mealTime }) {
+function buildQuery({ genre, preferences, scene, mealTime, orderStyle }) {
   const parts = []
   if (genre) parts.push(genre)
   if (mealTime) parts.push(mealTime)
   if (scene) parts.push(scene)
   if (preferences?.includes('コスパ重視')) parts.push('コスパ')
   if (preferences?.includes('個室あり')) parts.push('個室')
+  if (orderStyle?.includes('コース') && !orderStyle?.includes('アラカルト（単品）')) parts.push('コース料理')
+  if (orderStyle?.includes('アラカルト（単品）') && !orderStyle?.includes('コース')) parts.push('アラカルト')
   return parts.join(' ')
 }

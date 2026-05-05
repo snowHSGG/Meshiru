@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import '../styles/SearchPage.css'
 
 const GENRES = ['和食', 'イタリアン', '中華', '焼肉', 'ラーメン', '寿司', 'カフェ', '居酒屋']
+const ORDER_STYLES = ['コース', 'アラカルト（単品）']
 const PREFERENCES = ['コスパ重視', '雰囲気重視', '接客重視', '一人OK', '個室あり', '記念日向け']
 const SCENES = ['デート', '接待', '友人と', '一人飯', '家族と']
 const BUDGET_STEPS = [
@@ -53,6 +54,7 @@ export default function SearchPage() {
   const [budgetMin, setBudgetMin] = useState('')
   const [budgetMax, setBudgetMax] = useState('')
   const [partySize, setPartySize] = useState('')
+  const [orderStyle, setOrderStyle] = useState([])
   const [mealTime, setMealTime] = useState('')
   const [visitDate, setVisitDate] = useState(todayStr())
   const [visitTime, setVisitTime] = useState('')
@@ -84,7 +86,7 @@ export default function SearchPage() {
 
   function handleSearch() {
     navigate('/results', {
-      state: { genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, visitDate, visitTime, locMode, area },
+      state: { genre, preferences, scene, budgetMin, budgetMax, partySize, orderStyle, mealTime, visitDate, visitTime, locMode, area },
     })
   }
 
@@ -208,6 +210,21 @@ export default function SearchPage() {
                 className={`chip ${scene === s ? 'active' : ''}`}
                 onClick={() => setScene(scene === s ? '' : s)}
               >{s}</button>
+            ))}
+          </div>
+        </section>
+
+        <section className="filter-section">
+          <h2 className="filter-label">注文スタイル <span className="filter-note">複数選択可</span></h2>
+          <div className="chips">
+            {ORDER_STYLES.map((o) => (
+              <button
+                key={o}
+                className={`chip ${orderStyle.includes(o) ? 'active' : ''}`}
+                onClick={() => setOrderStyle((prev) =>
+                  prev.includes(o) ? prev.filter((x) => x !== o) : [...prev, o]
+                )}
+              >{o}</button>
             ))}
           </div>
         </section>
