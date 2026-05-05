@@ -118,6 +118,9 @@ export default function ResultsPage() {
                   {place.primaryTypeDisplayName && (
                     <span className="card-type">{place.primaryTypeDisplayName.text}</span>
                   )}
+                  {!place.priceVerified && (
+                    <span className="card-badge-unverified">価格未確認</span>
+                  )}
                 </div>
                 {(place.editorialSummary || place.hotpepperCatch) && (
                   <p className="card-summary">

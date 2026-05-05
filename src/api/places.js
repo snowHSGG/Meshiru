@@ -12,7 +12,7 @@ export async function searchRestaurants({ genre, preferences, scene, budget, mea
     searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, mealTime }),
   ])
 
-  return mergeResults(googleResults, hotpepperResults)
+  return mergeResults(googleResults, hotpepperResults, budget)
 }
 
 async function fetchGoogle({ query, priceLevel, center }) {
@@ -81,13 +81,21 @@ async function fetchGoogle({ query, priceLevel, center }) {
   })
 }
 
-function mergeResults(googlePlaces, hotpepperShops) {
+const BUDGET_CODE_MAP = {
+  '〜1000円': ['B001', 'B002', 'B003'],
+  '1000〜3000円': ['B003', 'B004', 'B005', 'B006'],
+  '3000〜6000円': ['B006', 'B007', 'B008'],
+  '6000円〜': ['B009', 'B010', 'B011', 'B012', 'B013'],
+}
+
+function mergeResults(googlePlaces, hotpepperShops, budget) {
+  const allowedCodes = budget ? BUDGET_CODE_MAP[budget] : null
+
   const merged = googlePlaces.map((place) => {
     const name = place.displayName?.text ?? ''
     const lat = place.location?.latitude
     const lng = place.location?.longitude
 
-    // 名前または距離が近いHotPepperの店舗とマッチング
     const matched = hotpepperShops.find((hp) => {
       const sameName = hp.name.includes(name.slice(0, 4)) || name.includes(hp.name.slice(0, 4))
       const nearby = lat && lng
@@ -96,12 +104,17 @@ function mergeResults(googlePlaces, hotpepperShops) {
       return sameName || nearby
     })
 
+    if (matched && allowedCodes && matched.budgetCode && !allowedCodes.includes(matched.budgetCode)) {
+      return null
+    }
+
     return {
       ...place,
       hotpepperUrl: matched?.reserveUrl ?? null,
       hotpepperCatch: matched?.catch ?? null,
+      priceVerified: !!matched,
     }
-  })
+  }).filter(Boolean)
 
   return merged
     .sort((a, b) => b.rating - a.rating)

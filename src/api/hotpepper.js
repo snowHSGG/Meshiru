@@ -22,5 +22,6 @@ export async function searchHotpepper({ lat, lng, keyword, mealTime }) {
     photo: s.photo?.pc?.l ?? null,
     reserveUrl: s.urls?.pc ?? null,
     budget: s.budget?.name ?? null,
+    budgetCode: s.budget?.code ?? null,
   }))
 }
