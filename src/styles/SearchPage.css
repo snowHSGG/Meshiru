@@ -136,6 +136,27 @@
   color: #f0f0f0;
 }
 
+.party-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.party-input {
+  width: 6rem;
+  text-align: right;
+}
+
+.party-input::-webkit-inner-spin-button,
+.party-input::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+.party-unit {
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
 .search-btn {
   align-self: flex-start;
   padding: 0.8rem 3rem;

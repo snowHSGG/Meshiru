@@ -3,14 +3,15 @@ import { searchHotpepper } from './hotpepper'
 const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY
 
 // HotPepper budget code → yen range (upper bound)
+// HotPepper budget codes (B001-B013) → yen range
 const HP_CODE_MAX = {
   B001: 500, B002: 1000, B003: 1500, B004: 2000, B005: 3000,
-  B006: 4000, B007: 5000, B008: 7000, B009: 10000,
+  B006: 4000, B007: 5000, B008: 8000, B009: 10000,
   B010: 15000, B011: 20000, B012: 30000, B013: Infinity,
 }
 const HP_CODE_MIN = {
   B001: 0, B002: 501, B003: 1001, B004: 1501, B005: 2001,
-  B006: 3001, B007: 4001, B008: 5001, B009: 7001,
+  B006: 3001, B007: 4001, B008: 5001, B009: 8001,
   B010: 10001, B011: 15001, B012: 20001, B013: 30001,
 }
 

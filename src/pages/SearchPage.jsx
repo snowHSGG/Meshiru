@@ -6,27 +6,22 @@ const GENRES = ['和食', 'イタリアン', '中華', '焼肉', 'ラーメン',
 const PREFERENCES = ['コスパ重視', '雰囲気重視', '接客重視', '一人OK', '個室あり', '記念日向け']
 const SCENES = ['デート', '接待', '友人と', '一人飯', '家族と']
 const BUDGET_STEPS = [
-  { label: '500円',    value: 500 },
-  { label: '1,000円',  value: 1000 },
-  { label: '1,500円',  value: 1500 },
-  { label: '2,000円',  value: 2000 },
-  { label: '3,000円',  value: 3000 },
-  { label: '4,000円',  value: 4000 },
-  { label: '5,000円',  value: 5000 },
-  { label: '7,000円',  value: 7000 },
-  { label: '10,000円', value: 10000 },
-  { label: '15,000円', value: 15000 },
-  { label: '20,000円', value: 20000 },
-  { label: '30,000円', value: 30000 },
-]
-
-const PARTY_SIZES = [
-  { label: '1人',     value: 1 },
-  { label: '2人',     value: 2 },
-  { label: '3人',     value: 3 },
-  { label: '4〜5人',  value: 4 },
-  { label: '6〜10人', value: 6 },
-  { label: '11人以上', value: 11 },
+  { label: '¥ 1,000',  value: 1000 },
+  { label: '¥ 2,000',  value: 2000 },
+  { label: '¥ 3,000',  value: 3000 },
+  { label: '¥ 4,000',  value: 4000 },
+  { label: '¥ 5,000',  value: 5000 },
+  { label: '¥ 6,000',  value: 6000 },
+  { label: '¥ 8,000',  value: 8000 },
+  { label: '¥ 10,000', value: 10000 },
+  { label: '¥ 15,000', value: 15000 },
+  { label: '¥ 20,000', value: 20000 },
+  { label: '¥ 30,000', value: 30000 },
+  { label: '¥ 40,000', value: 40000 },
+  { label: '¥ 50,000', value: 50000 },
+  { label: '¥ 60,000', value: 60000 },
+  { label: '¥ 80,000', value: 80000 },
+  { label: '¥ 100,000', value: 100000 },
 ]
 const MEAL_TIMES = ['ランチ', 'ディナー']
 const HOURS = Array.from({ length: 16 }, (_, i) => {
@@ -219,14 +214,22 @@ export default function SearchPage() {
 
         <section className="filter-section">
           <h2 className="filter-label">人数</h2>
-          <div className="chips">
-            {PARTY_SIZES.map((p) => (
-              <button
-                key={p.value}
-                className={`chip ${partySize === p.value ? 'active' : ''}`}
-                onClick={() => setPartySize(partySize === p.value ? '' : p.value)}
-              >{p.label}</button>
-            ))}
+          <div className="party-input-row">
+            <input
+              className="datetime-input party-input"
+              type="number"
+              min="1"
+              max="99"
+              placeholder="指定なし"
+              value={partySize}
+              onChange={(e) => {
+                const v = e.target.value
+                if (v === '') { setPartySize(''); return }
+                const n = Math.min(99, Math.max(1, parseInt(v) || 1))
+                setPartySize(n)
+              }}
+            />
+            <span className="party-unit">人</span>
           </div>
         </section>
 
