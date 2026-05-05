@@ -238,6 +238,33 @@
   letter-spacing: 0.03em;
 }
 
+.card-badge-course-unknown {
+  font-size: 0.7rem;
+  color: #7a6030;
+  border: 1px solid #4a3a20;
+  padding: 0.1rem 0.45rem;
+  letter-spacing: 0.03em;
+}
+
+.card-badge-course-verified {
+  font-size: 0.7rem;
+  color: #4a8a4a;
+  border: 1px solid #2a5a2a;
+  padding: 0.1rem 0.45rem;
+  letter-spacing: 0.03em;
+}
+
+.chip-verified {
+  border-color: #2a5a2a;
+  color: #4a8a4a;
+}
+
+.chip-verified.active {
+  background: #4a8a4a;
+  border-color: #4a8a4a;
+  color: #0f0f0f;
+}
+
 .card-price-range {
   font-size: 0.82rem;
   color: #888;

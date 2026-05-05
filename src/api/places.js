@@ -38,7 +38,10 @@ function rangeToPriceLevels(min, max) {
 
 export async function searchRestaurants({ genre, preferences, scene, budgetMin, budgetMax, partySize, orderStyle, mealTime, locMode, area }) {
   const query = buildQuery({ genre, preferences, scene, mealTime, orderStyle })
-  const priceLevels = rangeToPriceLevels(budgetMin, budgetMax)
+  const courseOnly = orderStyle?.includes('コース') && !orderStyle?.includes('アラカルト（単品）')
+
+  // コース選択時はGoogleのpriceLevelフィルターを外す（コース料金 ≠ アラカルト価格帯）
+  const priceLevels = courseOnly ? null : rangeToPriceLevels(budgetMin, budgetMax)
   const center = await resolveCenter({ locMode, area })
 
   const [googleResults, hotpepperResults] = await Promise.all([
@@ -46,7 +49,43 @@ export async function searchRestaurants({ genre, preferences, scene, budgetMin, 
     searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, mealTime, orderStyle }),
   ])
 
-  return mergeResults(googleResults, hotpepperResults, budgetMin, budgetMax, partySize)
+  // コース選択時はHotPepperのbudgetCodeフィルターもスキップして広く取る
+  const merged = mergeResults(googleResults, hotpepperResults, budgetMin, budgetMax, partySize, courseOnly)
+
+  // コース選択時：実際のページからコース料金を取得してフィルタリング
+  if (courseOnly) {
+    return enrichWithCoursePrices(merged, budgetMin, budgetMax)
+  }
+
+  return merged
+}
+
+async function enrichWithCoursePrices(results, budgetMin, budgetMax) {
+  const lo = budgetMin !== '' && budgetMin != null ? Number(budgetMin) : 0
+  const hi = budgetMax !== '' && budgetMax != null ? Number(budgetMax) : Infinity
+  const hasRange = lo > 0 || hi < Infinity
+
+  const enriched = await Promise.all(results.map(async (place) => {
+    if (!place.hotpepperUrl) {
+      return { ...place, coursePriceVerified: false }
+    }
+
+    try {
+      const res = await fetch(`/api/courseprices?url=${encodeURIComponent(place.hotpepperUrl)}`)
+      const { min, max } = await res.json()
+
+      if (min !== null) {
+        // コース料金が取得できた場合、予算範囲外なら除外
+        if (hasRange && !rangesOverlap(lo, hi, min, max)) return null
+        return { ...place, coursePriceVerified: true, coursePriceMin: min, coursePriceMax: max }
+      }
+    } catch {}
+
+    // 取得失敗: 除外せず「不明」として返す
+    return { ...place, coursePriceVerified: false }
+  }))
+
+  return enriched.filter(Boolean)
 }
 
 async function fetchGoogle({ query, priceLevels, center }) {
@@ -97,7 +136,7 @@ async function fetchGoogle({ query, priceLevels, center }) {
   })
 }
 
-function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax, partySize) {
+function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax, partySize, skipBudgetFilter = false) {
   const lo = budgetMin !== '' && budgetMin != null ? Number(budgetMin) : 0
   const hi = budgetMax !== '' && budgetMax != null ? Number(budgetMax) : Infinity
   const hasRange = lo > 0 || hi < Infinity
@@ -115,7 +154,7 @@ function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax, partyS
       return sameName || nearby
     })
 
-    if (matched && hasRange && matched.budgetCode) {
+    if (!skipBudgetFilter && matched && hasRange && matched.budgetCode) {
       const codeMin = HP_CODE_MIN[matched.budgetCode] ?? 0
       const codeMax = HP_CODE_MAX[matched.budgetCode] ?? Infinity
       if (!rangesOverlap(lo, hi, codeMin, codeMax)) return null

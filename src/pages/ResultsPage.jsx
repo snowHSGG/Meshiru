@@ -56,6 +56,7 @@ export default function ResultsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selected, setSelected] = useState(null)
+  const [courseVerifiedOnly, setCourseVerifiedOnly] = useState(false)
 
   function runSearch(filters) {
     setLoading(true)
@@ -235,6 +236,14 @@ export default function ResultsPage() {
                 >{o}</button>
               ))}
             </div>
+            {orderStyle.includes('コース') && (
+              <div className="chips" style={{ marginTop: '0.5rem' }}>
+                <button
+                  className={`chip chip-verified ${courseVerifiedOnly ? 'active' : ''}`}
+                  onClick={() => setCourseVerifiedOnly((v) => !v)}
+                >コース料金確認済みのみ</button>
+              </div>
+            )}
           </section>
 
           <section className="filter-section">
@@ -313,9 +322,15 @@ export default function ResultsPage() {
           )}
 
           <div className="cards">
-            {results.map((place, i) => {
-              const priceRange = place.hotpepperBudget
-                ?? (place.priceLevel ? GOOGLE_PRICE_RANGE[place.priceLevel] : null)
+            {results
+              .filter((place) => !courseVerifiedOnly || place.coursePriceVerified === true)
+              .map((place, i) => {
+              const isCourseSearch = orderStyle.includes('コース')
+
+              // 価格レンジ表示: コース料金 > HotPepper通常予算 > Google価格帯
+              const priceRange = isCourseSearch && place.coursePriceMin != null
+                ? `コース ¥${place.coursePriceMin.toLocaleString()}〜¥${place.coursePriceMax.toLocaleString()}`
+                : (place.hotpepperBudget ?? (place.priceLevel ? GOOGLE_PRICE_RANGE[place.priceLevel] : null))
 
               return (
                 <div
@@ -342,6 +357,12 @@ export default function ResultsPage() {
                         )}
                         {!place.priceVerified && (
                           <span className="card-badge-unverified">価格未確認</span>
+                        )}
+                        {isCourseSearch && place.coursePriceVerified === false && place.priceVerified && (
+                          <span className="card-badge-course-unknown">コース料金不明</span>
+                        )}
+                        {isCourseSearch && place.coursePriceVerified === true && (
+                          <span className="card-badge-course-verified">コース料金確認済</span>
                         )}
                       </div>
                       {priceRange && (
