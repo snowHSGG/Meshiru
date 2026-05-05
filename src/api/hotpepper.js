@@ -23,5 +23,6 @@ export async function searchHotpepper({ lat, lng, keyword, mealTime }) {
     reserveUrl: s.urls?.pc ?? null,
     budget: s.budget?.name ?? null,
     budgetCode: s.budget?.code ?? null,
+    capacity: parseInt(s.capacity) || null,
   }))
 }

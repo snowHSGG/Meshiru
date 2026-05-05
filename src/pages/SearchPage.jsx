@@ -6,12 +6,27 @@ const GENRES = ['和食', 'イタリアン', '中華', '焼肉', 'ラーメン',
 const PREFERENCES = ['コスパ重視', '雰囲気重視', '接客重視', '一人OK', '個室あり', '記念日向け']
 const SCENES = ['デート', '接待', '友人と', '一人飯', '家族と']
 const BUDGET_STEPS = [
-  { label: '1,000円', value: 1000 },
-  { label: '2,000円', value: 2000 },
-  { label: '3,000円', value: 3000 },
-  { label: '5,000円', value: 5000 },
-  { label: '8,000円', value: 8000 },
+  { label: '500円',    value: 500 },
+  { label: '1,000円',  value: 1000 },
+  { label: '1,500円',  value: 1500 },
+  { label: '2,000円',  value: 2000 },
+  { label: '3,000円',  value: 3000 },
+  { label: '4,000円',  value: 4000 },
+  { label: '5,000円',  value: 5000 },
+  { label: '7,000円',  value: 7000 },
+  { label: '10,000円', value: 10000 },
   { label: '15,000円', value: 15000 },
+  { label: '20,000円', value: 20000 },
+  { label: '30,000円', value: 30000 },
+]
+
+const PARTY_SIZES = [
+  { label: '1人',     value: 1 },
+  { label: '2人',     value: 2 },
+  { label: '3人',     value: 3 },
+  { label: '4〜5人',  value: 4 },
+  { label: '6〜10人', value: 6 },
+  { label: '11人以上', value: 11 },
 ]
 const MEAL_TIMES = ['ランチ', 'ディナー']
 const HOURS = Array.from({ length: 16 }, (_, i) => {
@@ -42,6 +57,7 @@ export default function SearchPage() {
   const [scene, setScene] = useState('')
   const [budgetMin, setBudgetMin] = useState('')
   const [budgetMax, setBudgetMax] = useState('')
+  const [partySize, setPartySize] = useState('')
   const [mealTime, setMealTime] = useState('')
   const [visitDate, setVisitDate] = useState(todayStr())
   const [visitTime, setVisitTime] = useState('')
@@ -73,7 +89,7 @@ export default function SearchPage() {
 
   function handleSearch() {
     navigate('/results', {
-      state: { genre, preferences, scene, budgetMin, budgetMax, mealTime, visitDate, visitTime, locMode, area },
+      state: { genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, visitDate, visitTime, locMode, area },
     })
   }
 
@@ -197,6 +213,19 @@ export default function SearchPage() {
                 className={`chip ${scene === s ? 'active' : ''}`}
                 onClick={() => setScene(scene === s ? '' : s)}
               >{s}</button>
+            ))}
+          </div>
+        </section>
+
+        <section className="filter-section">
+          <h2 className="filter-label">人数</h2>
+          <div className="chips">
+            {PARTY_SIZES.map((p) => (
+              <button
+                key={p.value}
+                className={`chip ${partySize === p.value ? 'active' : ''}`}
+                onClick={() => setPartySize(partySize === p.value ? '' : p.value)}
+              >{p.label}</button>
             ))}
           </div>
         </section>

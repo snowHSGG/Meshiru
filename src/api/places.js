@@ -35,7 +35,7 @@ function rangeToPriceLevels(min, max) {
     .map(([level]) => level)
 }
 
-export async function searchRestaurants({ genre, preferences, scene, budgetMin, budgetMax, mealTime, locMode, area }) {
+export async function searchRestaurants({ genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, locMode, area }) {
   const query = buildQuery({ genre, preferences, scene, mealTime })
   const priceLevels = rangeToPriceLevels(budgetMin, budgetMax)
   const center = await resolveCenter({ locMode, area })
@@ -45,7 +45,7 @@ export async function searchRestaurants({ genre, preferences, scene, budgetMin, 
     searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, mealTime }),
   ])
 
-  return mergeResults(googleResults, hotpepperResults, budgetMin, budgetMax)
+  return mergeResults(googleResults, hotpepperResults, budgetMin, budgetMax, partySize)
 }
 
 async function fetchGoogle({ query, priceLevels, center }) {
@@ -96,7 +96,7 @@ async function fetchGoogle({ query, priceLevels, center }) {
   })
 }
 
-function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax) {
+function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax, partySize) {
   const lo = budgetMin !== '' && budgetMin != null ? Number(budgetMin) : 0
   const hi = budgetMax !== '' && budgetMax != null ? Number(budgetMax) : Infinity
   const hasRange = lo > 0 || hi < Infinity
@@ -118,6 +118,10 @@ function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax) {
       const codeMin = HP_CODE_MIN[matched.budgetCode] ?? 0
       const codeMax = HP_CODE_MAX[matched.budgetCode] ?? Infinity
       if (!rangesOverlap(lo, hi, codeMin, codeMax)) return null
+    }
+
+    if (matched && partySize && matched.capacity !== null && matched.capacity < partySize) {
+      return null
     }
 
     return {
