@@ -148,13 +148,6 @@
   line-height: 1.7;
 }
 
-.results-status--warn {
-  color: #8a7040;
-  border: 1px solid #4a3a20;
-  padding: 1rem;
-  margin-top: 1rem;
-  font-size: 0.88rem;
-}
 
 /* ── カード ── */
 
@@ -247,31 +240,11 @@
   letter-spacing: 0.03em;
 }
 
-.card-badge-course-unknown {
-  font-size: 0.7rem;
-  color: #7a6030;
-  border: 1px solid #4a3a20;
-  padding: 0.1rem 0.45rem;
-  letter-spacing: 0.03em;
-}
-
-.card-badge-course-verified {
-  font-size: 0.7rem;
-  color: #4a8a4a;
-  border: 1px solid #2a5a2a;
-  padding: 0.1rem 0.45rem;
-  letter-spacing: 0.03em;
-}
-
-.chip-verified {
-  border-color: #2a5a2a;
-  color: #4a8a4a;
-}
-
-.chip-verified.active {
-  background: #4a8a4a;
-  border-color: #4a8a4a;
-  color: #0f0f0f;
+.course-price-note {
+  font-size: 0.8rem;
+  color: #666;
+  border-left: 2px solid #333;
+  padding-left: 0.75rem;
 }
 
 .card-price-range {
