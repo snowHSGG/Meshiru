@@ -98,25 +98,37 @@ async function fetchGoogle({ query, priceLevels, center }) {
 }
 
 function isOpenAt(periods, dateStr, timeStr) {
-  if (!periods?.length || !dateStr || !timeStr) return true
-  const date = new Date(dateStr)
-  const dayOfWeek = date.getDay()
-  const [hour, minute] = timeStr.split(':').map(Number)
-  const checkMin = hour * 60 + minute
+  if (!periods?.length) return true
+  if (!dateStr && !timeStr) return true
+
+  const dayOfWeek = dateStr ? new Date(dateStr).getDay() : null
+  const checkMin = timeStr ? timeStr.split(':').map(Number).reduce((h, m) => h * 60 + m) : null
 
   return periods.some((p) => {
     const oDay = p.open.day
     const oMin = p.open.hour * 60 + p.open.minute
     const cDay = p.close?.day ?? oDay
     const cMin = p.close ? p.close.hour * 60 + p.close.minute : 24 * 60
+    const overnight = oDay !== cDay
 
-    if (oDay === cDay) {
-      return dayOfWeek === oDay && checkMin >= oMin && checkMin < cMin
+    // 曜日チェック
+    if (dayOfWeek !== null) {
+      if (!overnight && oDay !== dayOfWeek) return false
+      if (overnight && dayOfWeek !== oDay && dayOfWeek !== cDay) return false
     }
-    // 深夜営業（例：土曜22時〜日曜3時）
-    if (dayOfWeek === oDay) return checkMin >= oMin
-    if (dayOfWeek === cDay) return checkMin < cMin
-    return false
+
+    // 時間チェックなし → 曜日だけ一致すればOK
+    if (checkMin === null) return true
+
+    if (!overnight) {
+      return (dayOfWeek === null || dayOfWeek === oDay) && checkMin >= oMin && checkMin < cMin
+    } else {
+      if (dayOfWeek === oDay) return checkMin >= oMin
+      if (dayOfWeek === cDay) return checkMin < cMin
+      // 時間のみ指定の場合、深夜営業の時間帯と照合
+      if (dayOfWeek === null) return checkMin >= oMin || checkMin < cMin
+      return false
+    }
   })
 }
 
