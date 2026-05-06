@@ -4,8 +4,10 @@ import { fetchAutocompleteSuggestions, fetchPlaceLocation } from '../api/places'
 export default function AreaAutocomplete({ value, onChange, onSelect, placeholder }) {
   const [suggestions, setSuggestions] = useState([])
   const [open, setOpen] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(-1)
   const debounceRef = useRef(null)
   const containerRef = useRef(null)
+  const listRef = useRef(null)
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -21,19 +23,53 @@ export default function AreaAutocomplete({ value, onChange, onSelect, placeholde
     const text = e.target.value
     onChange(text)
     onSelect(null)
+    setActiveIndex(-1)
     clearTimeout(debounceRef.current)
     if (!text.trim()) { setSuggestions([]); setOpen(false); return }
     debounceRef.current = setTimeout(async () => {
       const results = await fetchAutocompleteSuggestions(text)
       setSuggestions(results)
       setOpen(results.length > 0)
+      setActiveIndex(-1)
     }, 300)
+  }
+
+  function handleKeyDown(e) {
+    if (!open || suggestions.length === 0) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setActiveIndex((i) => {
+        const next = Math.min(i + 1, suggestions.length - 1)
+        scrollIntoView(next)
+        return next
+      })
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setActiveIndex((i) => {
+        const next = Math.max(i - 1, -1)
+        scrollIntoView(next)
+        return next
+      })
+    } else if (e.key === 'Enter' && activeIndex >= 0) {
+      e.preventDefault()
+      handleSelect(suggestions[activeIndex])
+    } else if (e.key === 'Escape') {
+      setOpen(false)
+      setActiveIndex(-1)
+    }
+  }
+
+  function scrollIntoView(index) {
+    if (!listRef.current || index < 0) return
+    const item = listRef.current.children[index]
+    item?.scrollIntoView({ block: 'nearest' })
   }
 
   async function handleSelect(s) {
     onChange(s.mainText)
     setOpen(false)
     setSuggestions([])
+    setActiveIndex(-1)
     const location = await fetchPlaceLocation(s.placeId)
     if (location) onSelect({ label: s.mainText, lat: location.latitude, lng: location.longitude })
   }
@@ -46,15 +82,18 @@ export default function AreaAutocomplete({ value, onChange, onSelect, placeholde
         placeholder={placeholder}
         value={value}
         onChange={handleChange}
+        onKeyDown={handleKeyDown}
         onFocus={() => suggestions.length > 0 && setOpen(true)}
+        autoComplete="off"
       />
       {open && (
-        <ul className="area-suggestions">
-          {suggestions.map((s) => (
+        <ul className="area-suggestions" ref={listRef}>
+          {suggestions.map((s, i) => (
             <li
               key={s.placeId}
-              className="area-suggestion-item"
+              className={`area-suggestion-item ${i === activeIndex ? 'active' : ''}`}
               onMouseDown={(e) => { e.preventDefault(); handleSelect(s) }}
+              onMouseEnter={() => setActiveIndex(i)}
             >
               <span className="area-suggestion-main">{s.mainText}</span>
               {s.secondaryText && <span className="area-suggestion-sub">{s.secondaryText}</span>}

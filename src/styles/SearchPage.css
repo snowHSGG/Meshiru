@@ -212,7 +212,8 @@
   border-bottom: none;
 }
 
-.area-suggestion-item:hover {
+.area-suggestion-item:hover,
+.area-suggestion-item.active {
   background: #252525;
 }
 
