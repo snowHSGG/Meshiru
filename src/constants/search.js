@@ -1,6 +1,6 @@
 export const GENRES = ['和食', 'イタリアン', 'フレンチ', '中華', '焼肉', 'ラーメン', '寿司', '懐石・会席', 'カフェ', '居酒屋', '焼き鳥', 'うなぎ', 'ステーキ', 'タイ料理', 'スペイン料理']
-export const PREFERENCES = ['コスパ重視', '雰囲気重視', '接客重視', '一人OK', '個室あり', '記念日向け']
-export const SCENES = ['デート', '接待', '友人と', '一人飯', '家族と']
+export const PREFERENCES = ['コスパ重視', '個室あり']
+export const SCENES = ['デート', '接待']
 export const MEAL_TIMES = ['ランチ', 'ディナー']
 export const HOURS = Array.from({ length: 16 }, (_, i) => `${i + 9}:00`)
 
