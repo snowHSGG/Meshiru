@@ -90,8 +90,6 @@ async function fetchGoogle({ query, priceLevels, center }) {
 
   const data = await res.json()
   return (data.places ?? []).filter((p) => {
-    if (p.rating < 3.5) return false
-    if ((p.userRatingCount ?? 0) < 20) return false
     if (p.servesDinner === false && p.servesLunch === false) return false
     return true
   })
