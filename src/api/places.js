@@ -2,7 +2,6 @@ import { searchHotpepper } from './hotpepper'
 
 const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY
 
-// HotPepper budget code → yen range (upper bound)
 // HotPepper budget codes (B001-B013) → yen range
 const HP_CODE_MAX = {
   B001: 500, B002: 1000, B003: 1500, B004: 2000, B005: 3000,
@@ -125,7 +124,7 @@ function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax, partyS
       if (!rangesOverlap(lo, hi, codeMin, codeMax)) return null
     }
 
-    if (matched && partySize && matched.capacity !== null && matched.capacity < partySize) {
+    if (matched && partySize && matched.capacity !== null && matched.capacity < Number(partySize)) {
       return null
     }
 

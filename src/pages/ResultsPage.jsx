@@ -8,13 +8,6 @@ import '../styles/SearchPage.css'
 
 const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY
 
-const PRICE_LABELS = {
-  PRICE_LEVEL_INEXPENSIVE: '¥',
-  PRICE_LEVEL_MODERATE: '¥¥',
-  PRICE_LEVEL_EXPENSIVE: '¥¥¥',
-  PRICE_LEVEL_VERY_EXPENSIVE: '¥¥¥¥',
-}
-
 const GOOGLE_PRICE_RANGE = {
   PRICE_LEVEL_INEXPENSIVE:    '〜¥1,000',
   PRICE_LEVEL_MODERATE:       '¥1,000〜¥3,000',
@@ -139,6 +132,7 @@ export default function ResultsPage() {
                     onClick={() => setArea(area?.label === a.label ? null : a)}
                   >{a.label}</button>
                 ))}
+                {!area && <p className="geo-status" style={{ marginTop: '0.25rem' }}>未選択 → 東京全体で検索</p>}
               </div>
             )}
           </section>

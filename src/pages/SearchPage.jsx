@@ -13,7 +13,7 @@ export default function SearchPage() {
   const [partySize, setPartySize] = useState('')
   const [orderStyle, setOrderStyle] = useState([])
   const [mealTime, setMealTime] = useState('')
-  const [visitDate, setVisitDate] = useState(todayStr())
+  const [visitDate, setVisitDate] = useState('')
   const [visitTime, setVisitTime] = useState('')
   const [locMode, setLocMode] = useState('area')
   const [area, setArea] = useState(null)
@@ -82,6 +82,7 @@ export default function SearchPage() {
                   onClick={() => setArea(area?.label === a.label ? null : a)}
                 >{a.label}</button>
               ))}
+              {!area && <p className="geo-status" style={{ marginTop: '0.5rem' }}>未選択 → 東京全体で検索</p>}
             </div>
           )}
         </section>
