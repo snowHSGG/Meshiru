@@ -67,7 +67,7 @@ export default function ResultsPage() {
 
   async function handleResearch() {
     let resolvedArea = area
-    if (locMode === 'area' && areaText.trim()) {
+    if (locMode === 'area' && areaText.trim() && !resolvedArea) {
       setGeoLoading(true)
       resolvedArea = await geocodeArea(areaText.trim())
       setGeoLoading(false)
