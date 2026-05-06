@@ -157,6 +157,10 @@
   color: #aaa;
 }
 
+.area-autocomplete {
+  position: relative;
+}
+
 .area-input {
   width: 100%;
   background: transparent;
@@ -176,6 +180,50 @@
 
 .area-input:focus {
   border-color: #f0f0f0;
+}
+
+.area-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-top: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  z-index: 100;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.area-suggestion-item {
+  padding: 0.6rem 0.75rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  border-bottom: 1px solid #222;
+  transition: background 0.1s;
+}
+
+.area-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.area-suggestion-item:hover {
+  background: #252525;
+}
+
+.area-suggestion-main {
+  font-size: 0.88rem;
+  color: #f0f0f0;
+}
+
+.area-suggestion-sub {
+  font-size: 0.75rem;
+  color: #555;
 }
 
 .search-btn {

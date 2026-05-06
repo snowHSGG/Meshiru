@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GENRES, PREFERENCES, SCENES, MEAL_TIMES, HOURS, BUDGET_STEPS, todayStr } from '../constants/search'
 import { geocodeArea } from '../api/places'
+import AreaAutocomplete from '../components/AreaAutocomplete'
 import '../styles/SearchPage.css'
 
 export default function SearchPage() {
@@ -17,6 +18,7 @@ export default function SearchPage() {
   const [visitTime, setVisitTime] = useState('')
   const [locMode, setLocMode] = useState('area')
   const [areaText, setAreaText] = useState('')
+  const [area, setArea] = useState(null)
   const [geoError, setGeoError] = useState('')
   const [geoLoading, setGeoLoading] = useState(false)
 
@@ -41,19 +43,19 @@ export default function SearchPage() {
   }
 
   async function handleSearch() {
-    let area = null
-    if (locMode === 'area' && areaText.trim()) {
+    let resolvedArea = area
+    if (locMode === 'area' && areaText.trim() && !resolvedArea) {
       setGeoLoading(true)
-      area = await geocodeArea(areaText.trim())
+      resolvedArea = await geocodeArea(areaText.trim())
       setGeoLoading(false)
-      if (!area) {
+      if (!resolvedArea) {
         setGeoError('場所が見つかりませんでした。別の名前で試してください。')
         return
       }
       setGeoError('')
     }
     navigate('/results', {
-      state: { genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, visitDate, visitTime, locMode, area, areaText },
+      state: { genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, visitDate, visitTime, locMode, area: resolvedArea, areaText },
     })
   }
 
@@ -84,12 +86,11 @@ export default function SearchPage() {
             <p className="geo-status">現在地を使用します</p>
           )}
           {locMode === 'area' && (
-            <input
-              className="area-input"
-              type="text"
-              placeholder="駅名・地名・市区町村など（例：中目黒、梅田、札幌市）"
+            <AreaAutocomplete
               value={areaText}
-              onChange={(e) => { setAreaText(e.target.value); setGeoError('') }}
+              onChange={(text) => { setAreaText(text); setGeoError('') }}
+              onSelect={(resolved) => setArea(resolved)}
+              placeholder="駅名・地名・市区町村など（例：梅田、札幌駅、新宿区）"
             />
           )}
         </section>

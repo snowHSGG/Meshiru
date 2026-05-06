@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { APIProvider, Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps'
 import { searchRestaurants, getPhotoUrl, geocodeArea } from '../api/places'
+import AreaAutocomplete from '../components/AreaAutocomplete'
 import { GENRES, PREFERENCES, SCENES, MEAL_TIMES, HOURS, BUDGET_STEPS, todayStr } from '../constants/search'
 import '../styles/ResultsPage.css'
 import '../styles/SearchPage.css'
@@ -137,12 +138,11 @@ export default function ResultsPage() {
               <p className="geo-status">現在地を使用</p>
             )}
             {locMode === 'area' && (
-              <input
-                className="area-input"
-                type="text"
-                placeholder="駅名・地名・市区町村など"
+              <AreaAutocomplete
                 value={areaText}
-                onChange={(e) => { setAreaText(e.target.value); setGeoError('') }}
+                onChange={(text) => { setAreaText(text); setGeoError(''); setArea(null) }}
+                onSelect={(resolved) => setArea(resolved)}
+                placeholder="駅名・地名・市区町村など"
               />
             )}
           </section>

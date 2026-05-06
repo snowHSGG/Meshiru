@@ -160,6 +160,30 @@ async function resolveCenter({ locMode, area }) {
   return { lat: 35.6762, lng: 139.6503 }
 }
 
+export async function fetchAutocompleteSuggestions(input) {
+  const res = await fetch('https://places.googleapis.com/v1/places:autocomplete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': API_KEY },
+    body: JSON.stringify({ input, languageCode: 'ja', regionCode: 'JP' }),
+  })
+  const data = await res.json()
+  return (data.suggestions ?? [])
+    .filter((s) => s.placePrediction)
+    .map((s) => ({
+      placeId: s.placePrediction.placeId,
+      mainText: s.placePrediction.structuredFormat?.mainText?.text ?? s.placePrediction.text?.text ?? '',
+      secondaryText: s.placePrediction.structuredFormat?.secondaryText?.text ?? '',
+    }))
+}
+
+export async function fetchPlaceLocation(placeId) {
+  const res = await fetch(`https://places.googleapis.com/v1/places/${placeId}`, {
+    headers: { 'X-Goog-Api-Key': API_KEY, 'X-Goog-FieldMask': 'location' },
+  })
+  const data = await res.json()
+  return data.location ?? null
+}
+
 export async function geocodeArea(text) {
   const params = new URLSearchParams({ address: text, language: 'ja', region: 'jp', key: API_KEY })
   const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?${params}`)
