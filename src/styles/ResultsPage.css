@@ -140,6 +140,11 @@
   letter-spacing: 0.05em;
 }
 
+.visit-datetime-note {
+  font-size: 0.75rem;
+  color: #444;
+}
+
 .results-status {
   color: #555;
   font-size: 0.95rem;

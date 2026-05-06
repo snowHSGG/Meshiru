@@ -35,7 +35,7 @@ function rangeToPriceLevels(min, max) {
     .map(([level]) => level)
 }
 
-export async function searchRestaurants({ genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, locMode, area }) {
+export async function searchRestaurants({ genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, visitDate, visitTime, locMode, area }) {
   const query = buildQuery({ genre, preferences, scene, mealTime })
   const priceLevels = rangeToPriceLevels(budgetMin, budgetMax)
   const center = await resolveCenter({ locMode, area })
@@ -45,7 +45,7 @@ export async function searchRestaurants({ genre, preferences, scene, budgetMin, 
     searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, mealTime }),
   ])
 
-  return mergeResults(googleResults, hotpepperResults, budgetMin, budgetMax, partySize)
+  return mergeResults(googleResults, hotpepperResults, budgetMin, budgetMax, partySize, visitDate, visitTime)
 }
 
 async function fetchGoogle({ query, priceLevels, center }) {
@@ -82,6 +82,7 @@ async function fetchGoogle({ query, priceLevels, center }) {
         'places.photos',
         'places.servesDinner',
         'places.servesLunch',
+        'places.regularOpeningHours',
       ].join(','),
     },
     body: JSON.stringify(body),
@@ -96,6 +97,29 @@ async function fetchGoogle({ query, priceLevels, center }) {
   })
 }
 
+function isOpenAt(periods, dateStr, timeStr) {
+  if (!periods?.length || !dateStr || !timeStr) return true
+  const date = new Date(dateStr)
+  const dayOfWeek = date.getDay()
+  const [hour, minute] = timeStr.split(':').map(Number)
+  const checkMin = hour * 60 + minute
+
+  return periods.some((p) => {
+    const oDay = p.open.day
+    const oMin = p.open.hour * 60 + p.open.minute
+    const cDay = p.close?.day ?? oDay
+    const cMin = p.close ? p.close.hour * 60 + p.close.minute : 24 * 60
+
+    if (oDay === cDay) {
+      return dayOfWeek === oDay && checkMin >= oMin && checkMin < cMin
+    }
+    // 深夜営業（例：土曜22時〜日曜3時）
+    if (dayOfWeek === oDay) return checkMin >= oMin
+    if (dayOfWeek === cDay) return checkMin < cMin
+    return false
+  })
+}
+
 function findMatch(shops, name, lat, lng) {
   return shops.find((s) => {
     const sameName = s.name.includes(name.slice(0, 4)) || name.includes(s.name.slice(0, 4))
@@ -106,7 +130,7 @@ function findMatch(shops, name, lat, lng) {
   })
 }
 
-function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax, partySize) {
+function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax, partySize, visitDate, visitTime) {
   const lo = budgetMin !== '' && budgetMin != null ? Number(budgetMin) : 0
   const hi = budgetMax !== '' && budgetMax != null ? Number(budgetMax) : Infinity
   const hasRange = lo > 0 || hi < Infinity
@@ -115,6 +139,8 @@ function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax, partyS
     const name = place.displayName?.text ?? ''
     const lat = place.location?.latitude
     const lng = place.location?.longitude
+
+    if (!isOpenAt(place.regularOpeningHours?.periods, visitDate, visitTime)) return null
 
     const matched = findMatch(hotpepperShops, name, lat, lng)
 

@@ -292,6 +292,7 @@ export default function ResultsPage() {
           {(visitDate || visitTime) && (
             <p className="visit-datetime">
               {visitDate && `📅 ${visitDate}`}{visitTime && `　🕐 ${visitTime}`}
+              <span className="visit-datetime-note">　※営業時間で絞り込み済み（席の空き状況は各リンク先でご確認ください）</span>
             </p>
           )}
 
