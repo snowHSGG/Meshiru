@@ -57,7 +57,7 @@ async function fetchGoogle({ query, priceLevels, center }) {
     locationBias: {
       circle: {
         center: { latitude: center.lat, longitude: center.lng },
-        radius: 2000.0,
+        radius: 1000.0,
       },
     },
     ...(priceLevels?.length ? { priceLevels } : {}),
@@ -142,8 +142,9 @@ function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax, partyS
     }
   }).filter(Boolean)
 
+  const bayesian = (r, n) => (100 * 4.0 + n * r) / (100 + n)
   return merged
-    .sort((a, b) => b.rating - a.rating)
+    .sort((a, b) => bayesian(b.rating, b.userRatingCount ?? 0) - bayesian(a.rating, a.userRatingCount ?? 0))
     .slice(0, 3)
 }
 
