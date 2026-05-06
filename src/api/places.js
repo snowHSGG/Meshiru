@@ -54,7 +54,7 @@ async function fetchGoogle({ query, priceLevels, center }) {
     languageCode: 'ja',
     maxResultCount: 20,
     includedType: 'restaurant',
-    locationBias: {
+    locationRestriction: {
       circle: {
         center: { latitude: center.lat, longitude: center.lng },
         radius: 1000.0,

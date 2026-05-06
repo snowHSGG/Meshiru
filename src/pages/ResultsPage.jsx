@@ -140,7 +140,7 @@ export default function ResultsPage() {
             {locMode === 'area' && (
               <AreaAutocomplete
                 value={areaText}
-                onChange={(text) => { setAreaText(text); setGeoError(''); setArea(null) }}
+                onChange={(text) => { setAreaText(text); setGeoError('') }}
                 onSelect={(resolved) => setArea(resolved)}
                 placeholder="駅名・地名・市区町村など"
               />
