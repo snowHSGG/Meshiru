@@ -35,21 +35,17 @@ function rangeToPriceLevels(min, max) {
     .map(([level]) => level)
 }
 
-export async function searchRestaurants({ genre, preferences, scene, budgetMin, budgetMax, partySize, orderStyle, mealTime, locMode, area }) {
-  const query = buildQuery({ genre, preferences, scene, mealTime, orderStyle })
-  const courseOnly = orderStyle?.includes('コース') && !orderStyle?.includes('アラカルト（単品）')
-
-  // コース選択時はGoogleのpriceLevelフィルターを外す（コース料金 ≠ アラカルト価格帯）
-  const priceLevels = courseOnly ? null : rangeToPriceLevels(budgetMin, budgetMax)
+export async function searchRestaurants({ genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, locMode, area }) {
+  const query = buildQuery({ genre, preferences, scene, mealTime })
+  const priceLevels = rangeToPriceLevels(budgetMin, budgetMax)
   const center = await resolveCenter({ locMode, area })
 
   const [googleResults, hotpepperResults] = await Promise.all([
     fetchGoogle({ query, priceLevels, center }),
-    searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, mealTime, orderStyle }),
+    searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, mealTime }),
   ])
 
-  // コース選択時はHotPepperのbudgetCodeフィルターをスキップして広く返す
-  return mergeResults(googleResults, hotpepperResults, budgetMin, budgetMax, partySize, courseOnly)
+  return mergeResults(googleResults, hotpepperResults, budgetMin, budgetMax, partySize)
 }
 
 async function fetchGoogle({ query, priceLevels, center }) {
@@ -100,7 +96,17 @@ async function fetchGoogle({ query, priceLevels, center }) {
   })
 }
 
-function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax, partySize, skipBudgetFilter = false) {
+function findMatch(shops, name, lat, lng) {
+  return shops.find((s) => {
+    const sameName = s.name.includes(name.slice(0, 4)) || name.includes(s.name.slice(0, 4))
+    const nearby = lat && lng
+      ? Math.abs(s.lat - lat) < 0.001 && Math.abs(s.lng - lng) < 0.001
+      : false
+    return sameName || nearby
+  })
+}
+
+function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax, partySize) {
   const lo = budgetMin !== '' && budgetMin != null ? Number(budgetMin) : 0
   const hi = budgetMax !== '' && budgetMax != null ? Number(budgetMax) : Infinity
   const hasRange = lo > 0 || hi < Infinity
@@ -110,18 +116,17 @@ function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax, partyS
     const lat = place.location?.latitude
     const lng = place.location?.longitude
 
-    const matched = hotpepperShops.find((hp) => {
-      const sameName = hp.name.includes(name.slice(0, 4)) || name.includes(hp.name.slice(0, 4))
-      const nearby = lat && lng
-        ? Math.abs(hp.lat - lat) < 0.001 && Math.abs(hp.lng - lng) < 0.001
-        : false
-      return sameName || nearby
-    })
+    const matched = findMatch(hotpepperShops, name, lat, lng)
 
-    if (!skipBudgetFilter && matched && hasRange && matched.budgetCode) {
+    if (matched && hasRange && matched.budgetCode) {
       const codeMin = HP_CODE_MIN[matched.budgetCode] ?? 0
       const codeMax = HP_CODE_MAX[matched.budgetCode] ?? Infinity
       if (!rangesOverlap(lo, hi, codeMin, codeMax)) return null
+    }
+
+    if (!matched && hasRange && place.priceLevel) {
+      const [glo, ghi] = GOOGLE_LEVEL_RANGE[place.priceLevel] ?? [0, Infinity]
+      if (!rangesOverlap(lo, hi, glo, ghi)) return null
     }
 
     if (matched && partySize && matched.capacity !== null && matched.capacity < Number(partySize)) {
@@ -155,18 +160,25 @@ async function resolveCenter({ locMode, area }) {
   return { lat: 35.6762, lng: 139.6503 }
 }
 
+export async function geocodeArea(text) {
+  const params = new URLSearchParams({ address: text, language: 'ja', region: 'jp', key: API_KEY })
+  const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?${params}`)
+  const data = await res.json()
+  if (data.status !== 'OK' || !data.results?.[0]) return null
+  const { lat, lng } = data.results[0].geometry.location
+  return { label: text, lat, lng }
+}
+
 export function getPhotoUrl(photoName) {
   return `https://places.googleapis.com/v1/${photoName}/media?maxHeightPx=400&maxWidthPx=800&key=${API_KEY}`
 }
 
-function buildQuery({ genre, preferences, scene, mealTime, orderStyle }) {
+function buildQuery({ genre, preferences, scene, mealTime }) {
   const parts = []
   if (genre) parts.push(genre)
   if (mealTime) parts.push(mealTime)
   if (scene) parts.push(scene)
   if (preferences?.includes('コスパ重視')) parts.push('コスパ')
   if (preferences?.includes('個室あり')) parts.push('個室')
-  if (orderStyle?.includes('コース') && !orderStyle?.includes('アラカルト（単品）')) parts.push('コース料理')
-  if (orderStyle?.includes('アラカルト（単品）') && !orderStyle?.includes('コース')) parts.push('アラカルト')
   return parts.join(' ')
 }

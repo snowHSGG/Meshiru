@@ -1,11 +1,10 @@
-export async function searchHotpepper({ lat, lng, keyword, mealTime, orderStyle }) {
+export async function searchHotpepper({ lat, lng, keyword, mealTime }) {
   const params = new URLSearchParams({
     lat: lat ?? '35.6762',
     lng: lng ?? '139.6503',
     ...(keyword ? { keyword } : {}),
     ...(mealTime === 'ランチ' ? { lunch: '1' } : {}),
     ...(mealTime === 'ディナー' ? { dinner: '1' } : {}),
-    ...(orderStyle?.includes('コース') && !orderStyle?.includes('アラカルト（単品）') ? { course: '1' } : {}),
   })
 
   const res = await fetch(`/api/hotpepper?${params}`)

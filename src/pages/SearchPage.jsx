@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { GENRES, PREFERENCES, SCENES, ORDER_STYLES, MEAL_TIMES, HOURS, AREAS, BUDGET_STEPS, todayStr } from '../constants/search'
+import { GENRES, PREFERENCES, SCENES, MEAL_TIMES, HOURS, BUDGET_STEPS, todayStr } from '../constants/search'
+import { geocodeArea } from '../api/places'
 import '../styles/SearchPage.css'
 
 export default function SearchPage() {
@@ -11,12 +12,11 @@ export default function SearchPage() {
   const [budgetMin, setBudgetMin] = useState('')
   const [budgetMax, setBudgetMax] = useState('')
   const [partySize, setPartySize] = useState('')
-  const [orderStyle, setOrderStyle] = useState([])
   const [mealTime, setMealTime] = useState('')
   const [visitDate, setVisitDate] = useState('')
   const [visitTime, setVisitTime] = useState('')
   const [locMode, setLocMode] = useState('area')
-  const [area, setArea] = useState(null)
+  const [areaText, setAreaText] = useState('')
   const [geoError, setGeoError] = useState('')
   const [geoLoading, setGeoLoading] = useState(false)
 
@@ -28,22 +28,32 @@ export default function SearchPage() {
 
   function switchToCurrentLocation() {
     setLocMode('current')
-    setArea(null)
     setGeoError('')
     setGeoLoading(true)
     navigator.geolocation.getCurrentPosition(
       () => setGeoLoading(false),
       () => {
         setGeoLoading(false)
-        setGeoError('位置情報の取得に失敗しました。エリアを選択してください。')
+        setGeoError('位置情報の取得に失敗しました。')
         setLocMode('area')
       }
     )
   }
 
-  function handleSearch() {
+  async function handleSearch() {
+    let area = null
+    if (locMode === 'area' && areaText.trim()) {
+      setGeoLoading(true)
+      area = await geocodeArea(areaText.trim())
+      setGeoLoading(false)
+      if (!area) {
+        setGeoError('場所が見つかりませんでした。別の名前で試してください。')
+        return
+      }
+      setGeoError('')
+    }
     navigate('/results', {
-      state: { genre, preferences, scene, budgetMin, budgetMax, partySize, orderStyle, mealTime, visitDate, visitTime, locMode, area },
+      state: { genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, visitDate, visitTime, locMode, area, areaText },
     })
   }
 
@@ -68,22 +78,19 @@ export default function SearchPage() {
               onClick={() => { setLocMode('area'); setGeoError('') }}
             >エリアを選ぶ</button>
           </div>
-          {geoLoading && <p className="geo-status">位置情報を取得中...</p>}
+          {geoLoading && <p className="geo-status">{locMode === 'area' ? '検索中...' : '位置情報を取得中...'}</p>}
           {geoError && <p className="geo-error">{geoError}</p>}
           {locMode === 'current' && !geoLoading && !geoError && (
             <p className="geo-status">現在地を使用します</p>
           )}
           {locMode === 'area' && (
-            <div className="chips" style={{ marginTop: '0.75rem' }}>
-              {AREAS.map((a) => (
-                <button
-                  key={a.label}
-                  className={`chip ${area?.label === a.label ? 'active' : ''}`}
-                  onClick={() => setArea(area?.label === a.label ? null : a)}
-                >{a.label}</button>
-              ))}
-              {!area && <p className="geo-status" style={{ marginTop: '0.5rem' }}>未選択 → 東京全体で検索</p>}
-            </div>
+            <input
+              className="area-input"
+              type="text"
+              placeholder="駅名・地名・市区町村など（例：中目黒、梅田、札幌市）"
+              value={areaText}
+              onChange={(e) => { setAreaText(e.target.value); setGeoError('') }}
+            />
           )}
         </section>
 
@@ -164,21 +171,6 @@ export default function SearchPage() {
                 className={`chip ${scene === s ? 'active' : ''}`}
                 onClick={() => setScene(scene === s ? '' : s)}
               >{s}</button>
-            ))}
-          </div>
-        </section>
-
-        <section className="filter-section">
-          <h2 className="filter-label">注文スタイル <span className="filter-note">複数選択可</span></h2>
-          <div className="chips">
-            {ORDER_STYLES.map((o) => (
-              <button
-                key={o}
-                className={`chip ${orderStyle.includes(o) ? 'active' : ''}`}
-                onClick={() => setOrderStyle((prev) =>
-                  prev.includes(o) ? prev.filter((x) => x !== o) : [...prev, o]
-                )}
-              >{o}</button>
             ))}
           </div>
         </section>

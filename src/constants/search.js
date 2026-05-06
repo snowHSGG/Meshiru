@@ -1,21 +1,9 @@
-export const GENRES = ['和食', 'イタリアン', '中華', '焼肉', 'ラーメン', '寿司', 'カフェ', '居酒屋']
+export const GENRES = ['和食', 'イタリアン', 'フレンチ', '中華', '焼肉', 'ラーメン', '寿司', '懐石・会席', 'カフェ', '居酒屋', '焼き鳥', 'うなぎ', 'ステーキ', 'タイ料理', 'スペイン料理']
 export const PREFERENCES = ['コスパ重視', '雰囲気重視', '接客重視', '一人OK', '個室あり', '記念日向け']
 export const SCENES = ['デート', '接待', '友人と', '一人飯', '家族と']
-export const ORDER_STYLES = ['コース', 'アラカルト（単品）']
 export const MEAL_TIMES = ['ランチ', 'ディナー']
 export const HOURS = Array.from({ length: 16 }, (_, i) => `${i + 9}:00`)
 
-export const AREAS = [
-  { label: '渋谷・原宿',    lat: 35.6580, lng: 139.7016 },
-  { label: '新宿',          lat: 35.6938, lng: 139.7034 },
-  { label: '銀座・有楽町',  lat: 35.6717, lng: 139.7649 },
-  { label: '六本木',        lat: 35.6628, lng: 139.7315 },
-  { label: '池袋',          lat: 35.7295, lng: 139.7109 },
-  { label: '上野・浅草',    lat: 35.7141, lng: 139.7774 },
-  { label: '秋葉原',        lat: 35.7022, lng: 139.7741 },
-  { label: '表参道',        lat: 35.6653, lng: 139.7127 },
-  { label: '恵比寿・代官山', lat: 35.6467, lng: 139.7100 },
-]
 
 export const BUDGET_STEPS = [
   { label: '¥ 1,000',  value: 1000 },

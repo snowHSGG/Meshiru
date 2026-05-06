@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { APIProvider, Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps'
-import { searchRestaurants, getPhotoUrl } from '../api/places'
-import { GENRES, PREFERENCES, SCENES, ORDER_STYLES, MEAL_TIMES, HOURS, AREAS, BUDGET_STEPS, todayStr } from '../constants/search'
+import { searchRestaurants, getPhotoUrl, geocodeArea } from '../api/places'
+import { GENRES, PREFERENCES, SCENES, MEAL_TIMES, HOURS, BUDGET_STEPS, todayStr } from '../constants/search'
 import '../styles/ResultsPage.css'
 import '../styles/SearchPage.css'
 
@@ -36,12 +36,12 @@ export default function ResultsPage() {
   const [budgetMin, setBudgetMin] = useState(state?.budgetMin ?? '')
   const [budgetMax, setBudgetMax] = useState(state?.budgetMax ?? '')
   const [partySize, setPartySize] = useState(state?.partySize ?? '')
-  const [orderStyle, setOrderStyle] = useState(state?.orderStyle ?? [])
   const [mealTime, setMealTime] = useState(state?.mealTime ?? '')
   const [visitDate, setVisitDate] = useState(state?.visitDate ?? '')
   const [visitTime, setVisitTime] = useState(state?.visitTime ?? '')
   const [locMode, setLocMode] = useState(state?.locMode ?? 'area')
   const [area, setArea] = useState(state?.area ?? null)
+  const [areaText, setAreaText] = useState(state?.areaText ?? '')
   const [geoError, setGeoError] = useState('')
   const [geoLoading, setGeoLoading] = useState(false)
 
@@ -61,11 +61,23 @@ export default function ResultsPage() {
   }
 
   useEffect(() => {
-    runSearch({ genre, preferences, scene, budgetMin, budgetMax, partySize, orderStyle, mealTime, visitDate, visitTime, locMode, area })
+    runSearch({ genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, visitDate, visitTime, locMode, area })
   }, [])
 
-  function handleResearch() {
-    runSearch({ genre, preferences, scene, budgetMin, budgetMax, partySize, orderStyle, mealTime, visitDate, visitTime, locMode, area })
+  async function handleResearch() {
+    let resolvedArea = area
+    if (locMode === 'area' && areaText.trim()) {
+      setGeoLoading(true)
+      resolvedArea = await geocodeArea(areaText.trim())
+      setGeoLoading(false)
+      if (!resolvedArea) {
+        setGeoError('場所が見つかりませんでした。')
+        return
+      }
+      setArea(resolvedArea)
+      setGeoError('')
+    }
+    runSearch({ genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, visitDate, visitTime, locMode, area: resolvedArea })
   }
 
   function togglePreference(p) {
@@ -89,9 +101,10 @@ export default function ResultsPage() {
     )
   }
 
+
   const mapCenter = results[0]?.location
     ? { lat: results[0].location.latitude, lng: results[0].location.longitude }
-    : { lat: 35.6762, lng: 139.6503 }
+    : (area ? { lat: area.lat, lng: area.lng } : { lat: 35.6762, lng: 139.6503 })
 
   const mapKey = results.map((r) => r.googleMapsUri).join(',')
 
@@ -118,22 +131,19 @@ export default function ResultsPage() {
                 onClick={() => { setLocMode('area'); setGeoError('') }}
               >エリア</button>
             </div>
-            {geoLoading && <p className="geo-status">取得中...</p>}
+            {geoLoading && <p className="geo-status">検索中...</p>}
             {geoError && <p className="geo-error">{geoError}</p>}
             {locMode === 'current' && !geoLoading && !geoError && (
               <p className="geo-status">現在地を使用</p>
             )}
             {locMode === 'area' && (
-              <div className="chips" style={{ marginTop: '0.5rem' }}>
-                {AREAS.map((a) => (
-                  <button
-                    key={a.label}
-                    className={`chip ${area?.label === a.label ? 'active' : ''}`}
-                    onClick={() => setArea(area?.label === a.label ? null : a)}
-                  >{a.label}</button>
-                ))}
-                {!area && <p className="geo-status" style={{ marginTop: '0.25rem' }}>未選択 → 東京全体で検索</p>}
-              </div>
+              <input
+                className="area-input"
+                type="text"
+                placeholder="駅名・地名・市区町村など"
+                value={areaText}
+                onChange={(e) => { setAreaText(e.target.value); setGeoError('') }}
+              />
             )}
           </section>
 
@@ -217,21 +227,6 @@ export default function ResultsPage() {
           </section>
 
           <section className="filter-section">
-            <h2 className="filter-label">注文スタイル <span className="filter-note">複数可</span></h2>
-            <div className="chips">
-              {ORDER_STYLES.map((o) => (
-                <button
-                  key={o}
-                  className={`chip ${orderStyle.includes(o) ? 'active' : ''}`}
-                  onClick={() => setOrderStyle((prev) =>
-                    prev.includes(o) ? prev.filter((x) => x !== o) : [...prev, o]
-                  )}
-                >{o}</button>
-              ))}
-            </div>
-          </section>
-
-          <section className="filter-section">
             <h2 className="filter-label">人数</h2>
             <div className="party-input-row">
               <input
@@ -305,10 +300,6 @@ export default function ResultsPage() {
           {!loading && !error && results.length === 0 && (
             <p className="results-status">条件に合うお店が見つかりませんでした。</p>
           )}
-          {!loading && !error && orderStyle.includes('コース') && results.length > 0 && (
-            <p className="course-price-note">コース料金は各リンク先でご確認ください</p>
-          )}
-
           <div className="cards">
             {results.map((place, i) => {
               const priceRange = place.hotpepperBudget
@@ -358,7 +349,7 @@ export default function ResultsPage() {
                             target="_blank"
                             rel="noreferrer"
                           >
-                            ホットペッパーで予約 →
+                            予約・クーポン →
                           </a>
                         )}
                         {place.websiteUri && (
