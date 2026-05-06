@@ -49,6 +49,15 @@ export async function searchRestaurants({ genre, preferences, scene, budgetMin, 
   return mergeResults(googleResults, hotpepperResults, budgetMin, budgetMax, partySize, visitDate, visitTime, excludes)
 }
 
+function haversineDistance(lat1, lng1, lat2, lng2) {
+  const R = 6371000
+  const toRad = (d) => d * Math.PI / 180
+  const dLat = toRad(lat2 - lat1)
+  const dLng = toRad(lng2 - lng1)
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
 async function fetchGoogle({ query, priceLevels, center, radius }) {
   const body = {
     textQuery: `${query || '飲食店'}`,
@@ -90,8 +99,13 @@ async function fetchGoogle({ query, priceLevels, center, radius }) {
   })
 
   const data = await res.json()
+  const maxRadius = radius ?? 1000
   return (data.places ?? []).filter((p) => {
     if (p.servesDinner === false && p.servesLunch === false) return false
+    if (p.location) {
+      const dist = haversineDistance(center.lat, center.lng, p.location.latitude, p.location.longitude)
+      if (dist > maxRadius) return false
+    }
     return true
   })
 }
