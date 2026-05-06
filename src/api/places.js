@@ -35,20 +35,21 @@ function rangeToPriceLevels(min, max) {
     .map(([level]) => level)
 }
 
-export async function searchRestaurants({ genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, visitDate, visitTime, locMode, area }) {
+export async function searchRestaurants({ genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, visitDate, visitTime, locMode, area, excludes, radius }) {
   const query = buildQuery({ genre, preferences, scene, mealTime })
   const priceLevels = rangeToPriceLevels(budgetMin, budgetMax)
   const center = await resolveCenter({ locMode, area })
+  const searchRadius = radius ?? 1000
 
   const [googleResults, hotpepperResults] = await Promise.all([
-    fetchGoogle({ query, priceLevels, center }),
+    fetchGoogle({ query, priceLevels, center, radius: searchRadius }),
     searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, mealTime }),
   ])
 
-  return mergeResults(googleResults, hotpepperResults, budgetMin, budgetMax, partySize, visitDate, visitTime)
+  return mergeResults(googleResults, hotpepperResults, budgetMin, budgetMax, partySize, visitDate, visitTime, excludes)
 }
 
-async function fetchGoogle({ query, priceLevels, center }) {
+async function fetchGoogle({ query, priceLevels, center, radius }) {
   const body = {
     textQuery: `${query || '飲食店'}`,
     languageCode: 'ja',
@@ -57,7 +58,7 @@ async function fetchGoogle({ query, priceLevels, center }) {
     locationBias: {
       circle: {
         center: { latitude: center.lat, longitude: center.lng },
-        radius: 1000.0,
+        radius: radius ?? 1000.0,
       },
     },
     ...(priceLevels?.length ? { priceLevels } : {}),
@@ -136,14 +137,15 @@ function findMatch(shops, name, lat, lng) {
     const nearby = lat && lng
       ? Math.abs(s.lat - lat) < 0.001 && Math.abs(s.lng - lng) < 0.001
       : false
-    return sameName || nearby
+    return sameName && nearby
   })
 }
 
-function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax, partySize, visitDate, visitTime) {
+function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax, partySize, visitDate, visitTime, excludes) {
   const lo = budgetMin !== '' && budgetMin != null ? Number(budgetMin) : 0
   const hi = budgetMax !== '' && budgetMax != null ? Number(budgetMax) : Infinity
   const hasRange = lo > 0 || hi < Infinity
+  const excludeTerms = (excludes ?? []).map((t) => t.toLowerCase())
 
   const merged = googlePlaces.map((place) => {
     const name = place.displayName?.text ?? ''
@@ -151,6 +153,12 @@ function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax, partyS
     const lng = place.location?.longitude
 
     if (!isOpenAt(place.regularOpeningHours?.periods, visitDate, visitTime)) return null
+
+    if (excludeTerms.length > 0) {
+      const typeText = (place.primaryTypeDisplayName?.text ?? '').toLowerCase()
+      const nameText = name.toLowerCase()
+      if (excludeTerms.some((t) => typeText.includes(t) || nameText.includes(t))) return null
+    }
 
     const matched = findMatch(hotpepperShops, name, lat, lng)
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { GENRES, PREFERENCES, SCENES, MEAL_TIMES, HOURS, BUDGET_STEPS, todayStr } from '../constants/search'
+import { GENRES, PREFERENCES, SCENES, MEAL_TIMES, HOURS, BUDGET_STEPS, RADIUS_OPTIONS, todayStr } from '../constants/search'
 import { geocodeArea } from '../api/places'
 import AreaAutocomplete from '../components/AreaAutocomplete'
 import '../styles/SearchPage.css'
@@ -21,6 +21,9 @@ export default function SearchPage() {
   const [area, setArea] = useState(null)
   const [geoError, setGeoError] = useState('')
   const [geoLoading, setGeoLoading] = useState(false)
+  const [excludes, setExcludes] = useState([])
+  const [excludeInput, setExcludeInput] = useState('')
+  const [radius, setRadius] = useState(1000)
 
   function togglePreference(p) {
     setPreferences((prev) =>
@@ -55,7 +58,7 @@ export default function SearchPage() {
       setGeoError('')
     }
     navigate('/results', {
-      state: { genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, visitDate, visitTime, locMode, area: resolvedArea, areaText },
+      state: { genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, visitDate, visitTime, locMode, area: resolvedArea, areaText, excludes, radius },
     })
   }
 
@@ -93,6 +96,19 @@ export default function SearchPage() {
               placeholder="駅名・地名・市区町村など（例：梅田、札幌駅、新宿区）"
             />
           )}
+        </section>
+
+        <section className="filter-section">
+          <h2 className="filter-label">検索範囲</h2>
+          <div className="chips">
+            {RADIUS_OPTIONS.map((r) => (
+              <button
+                key={r.value}
+                className={`chip ${radius === r.value ? 'active' : ''}`}
+                onClick={() => setRadius(r.value)}
+              >{r.label}</button>
+            ))}
+          </div>
         </section>
 
         <section className="filter-section">
@@ -229,6 +245,37 @@ export default function SearchPage() {
               </select>
             </div>
           </div>
+        </section>
+
+        <section className="filter-section">
+          <h2 className="filter-label">除外ワード <span className="filter-note">Enterで追加</span></h2>
+          <div className="exclude-input-row">
+            <input
+              className="datetime-input exclude-input"
+              type="text"
+              placeholder="例：バー、もんじゃ"
+              value={excludeInput}
+              onChange={(e) => setExcludeInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.isComposing) {
+                  const v = excludeInput.trim()
+                  if (v && !excludes.includes(v)) setExcludes((prev) => [...prev, v])
+                  setExcludeInput('')
+                }
+              }}
+            />
+          </div>
+          {excludes.length > 0 && (
+            <div className="chips">
+              {excludes.map((ex) => (
+                <button
+                  key={ex}
+                  className="chip chip-exclude"
+                  onClick={() => setExcludes((prev) => prev.filter((x) => x !== ex))}
+                >{ex} ×</button>
+              ))}
+            </div>
+          )}
         </section>
 
         <button className="search-btn" onClick={handleSearch}>

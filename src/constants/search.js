@@ -5,6 +5,13 @@ export const MEAL_TIMES = ['ランチ', 'ディナー']
 export const HOURS = Array.from({ length: 16 }, (_, i) => `${i + 9}:00`)
 
 
+export const RADIUS_OPTIONS = [
+  { label: '500m', value: 500 },
+  { label: '1km',  value: 1000 },
+  { label: '2km',  value: 2000 },
+  { label: '5km',  value: 5000 },
+]
+
 export const BUDGET_STEPS = [
   { label: '¥ 1,000',  value: 1000 },
   { label: '¥ 2,000',  value: 2000 },

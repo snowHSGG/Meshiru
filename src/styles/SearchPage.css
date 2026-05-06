@@ -227,6 +227,26 @@
   color: #555;
 }
 
+.exclude-input-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.exclude-input {
+  flex: 1;
+}
+
+.chip-exclude {
+  border-color: #3a2a2a;
+  color: #cc7755;
+}
+
+.chip-exclude:hover {
+  border-color: #cc7755;
+  color: #ff9977;
+  background: transparent;
+}
+
 .search-btn {
   align-self: flex-start;
   padding: 0.8rem 3rem;

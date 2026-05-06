@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { APIProvider, Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps'
 import { searchRestaurants, getPhotoUrl, geocodeArea } from '../api/places'
 import AreaAutocomplete from '../components/AreaAutocomplete'
-import { GENRES, PREFERENCES, SCENES, MEAL_TIMES, HOURS, BUDGET_STEPS, todayStr } from '../constants/search'
+import { GENRES, PREFERENCES, SCENES, MEAL_TIMES, HOURS, BUDGET_STEPS, RADIUS_OPTIONS, todayStr } from '../constants/search'
 import '../styles/ResultsPage.css'
 import '../styles/SearchPage.css'
 
@@ -45,6 +45,9 @@ export default function ResultsPage() {
   const [areaText, setAreaText] = useState(state?.areaText ?? '')
   const [geoError, setGeoError] = useState('')
   const [geoLoading, setGeoLoading] = useState(false)
+  const [excludes, setExcludes] = useState(state?.excludes ?? [])
+  const [excludeInput, setExcludeInput] = useState('')
+  const [radius, setRadius] = useState(state?.radius ?? 1000)
 
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(true)
@@ -62,7 +65,7 @@ export default function ResultsPage() {
   }
 
   useEffect(() => {
-    runSearch({ genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, visitDate, visitTime, locMode, area })
+    runSearch({ genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, visitDate, visitTime, locMode, area, excludes, radius })
   }, [])
 
   async function handleResearch() {
@@ -78,7 +81,7 @@ export default function ResultsPage() {
       setArea(resolvedArea)
       setGeoError('')
     }
-    runSearch({ genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, visitDate, visitTime, locMode, area: resolvedArea })
+    runSearch({ genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, visitDate, visitTime, locMode, area: resolvedArea, excludes, radius })
   }
 
   function togglePreference(p) {
@@ -145,6 +148,19 @@ export default function ResultsPage() {
                 placeholder="駅名・地名・市区町村など"
               />
             )}
+          </section>
+
+          <section className="filter-section">
+            <h2 className="filter-label">検索範囲</h2>
+            <div className="chips">
+              {RADIUS_OPTIONS.map((r) => (
+                <button
+                  key={r.value}
+                  className={`chip ${radius === r.value ? 'active' : ''}`}
+                  onClick={() => setRadius(r.value)}
+                >{r.label}</button>
+              ))}
+            </div>
           </section>
 
           <section className="filter-section">
@@ -274,6 +290,37 @@ export default function ResultsPage() {
                 ))}
               </select>
             </div>
+          </section>
+
+          <section className="filter-section">
+            <h2 className="filter-label">除外ワード <span className="filter-note">Enterで追加</span></h2>
+            <div className="exclude-input-row">
+              <input
+                className="datetime-input exclude-input"
+                type="text"
+                placeholder="例：バー、もんじゃ"
+                value={excludeInput}
+                onChange={(e) => setExcludeInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.isComposing) {
+                    const v = excludeInput.trim()
+                    if (v && !excludes.includes(v)) setExcludes((prev) => [...prev, v])
+                    setExcludeInput('')
+                  }
+                }}
+              />
+            </div>
+            {excludes.length > 0 && (
+              <div className="chips">
+                {excludes.map((ex) => (
+                  <button
+                    key={ex}
+                    className="chip chip-exclude"
+                    onClick={() => setExcludes((prev) => prev.filter((x) => x !== ex))}
+                  >{ex} ×</button>
+                ))}
+              </div>
+            )}
           </section>
 
           <button className="search-btn sidebar-search-btn" onClick={handleResearch}>
