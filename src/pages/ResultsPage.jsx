@@ -372,6 +372,7 @@ export default function ResultsPage() {
           )}
 
           {loading && <p className="results-status">検索中...</p>}
+          {loading && <div className="search-toast">検索中...</div>}
           {error && <p className="results-status">{error}</p>}
           {!loading && !error && results.length === 0 && (
             <p className="results-status">条件に合うお店が見つかりませんでした。</p>
