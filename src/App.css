@@ -67,6 +67,9 @@
   padding: 1.5rem 2.5rem;
   border-top: 1px solid #1a1a1a;
   text-align: center;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
 }
 
 .footer-link {

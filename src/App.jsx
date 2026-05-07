@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import SearchPage from './pages/SearchPage'
 import ResultsPage from './pages/ResultsPage'
 import PrivacyPage from './pages/PrivacyPage'
+import TermsPage from './pages/TermsPage'
 import './App.css'
 
 function TopPage() {
@@ -17,6 +18,7 @@ function TopPage() {
         <button className="hero-btn" onClick={() => navigate('/search')}>お店を探す</button>
       </main>
       <footer className="footer">
+        <a className="footer-link" href="/terms">利用規約</a>
         <a className="footer-link" href="/privacy">プライバシーポリシー</a>
       </footer>
     </div>
@@ -31,6 +33,7 @@ export default function App() {
         <Route path="/search" element={<SearchPage />} />
         <Route path="/results" element={<ResultsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
       </Routes>
     </BrowserRouter>
   )
