@@ -74,11 +74,11 @@
 
 .footer-link {
   font-size: 0.8rem;
-  color: #444;
+  color: #888;
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .footer-link:hover {
-  color: #888;
+  color: #ccc;
 }
