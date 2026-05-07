@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GENRES, PREFERENCES, SCENES, MEAL_TIMES, HOURS, BUDGET_STEPS, RADIUS_OPTIONS, todayStr } from '../constants/search'
 import { geocodeArea } from '../api/places'
@@ -16,7 +16,7 @@ export default function SearchPage() {
   const [mealTime, setMealTime] = useState('')
   const [visitDate, setVisitDate] = useState('')
   const [visitTime, setVisitTime] = useState('')
-  const [locMode, setLocMode] = useState('area')
+  const [locMode, setLocMode] = useState('current')
   const [areaText, setAreaText] = useState('')
   const [area, setArea] = useState(null)
   const [geoError, setGeoError] = useState('')
@@ -24,6 +24,18 @@ export default function SearchPage() {
   const [excludes, setExcludes] = useState([])
   const [excludeInput, setExcludeInput] = useState('')
   const [radius, setRadius] = useState(1000)
+
+  useEffect(() => {
+    setGeoLoading(true)
+    navigator.geolocation.getCurrentPosition(
+      () => setGeoLoading(false),
+      () => {
+        setGeoLoading(false)
+        setGeoError('位置情報の取得に失敗しました。')
+        setLocMode('area')
+      }
+    )
+  }, [])
 
   function togglePreference(p) {
     setPreferences((prev) =>
