@@ -419,7 +419,7 @@ export default function ResultsPage() {
                       )}
                       <p className="card-address">{place.formattedAddress}</p>
                       <div className="card-links">
-                        {place.hotpepperUrl && (
+                        {place.hotpepperUrl ? (
                           <a
                             className="card-link card-link-reserve"
                             href={buildHotpepperUrl(place.hotpepperUrl, visitDate, visitTime)}
@@ -428,11 +428,12 @@ export default function ResultsPage() {
                           >
                             予約・クーポン →
                           </a>
-                        )}
-                        {place.websiteUri && (
-                          <a className="card-link" href={place.websiteUri} target="_blank" rel="noreferrer">
-                            公式サイト →
-                          </a>
+                        ) : (
+                          place.websiteUri && (
+                            <a className="card-link" href={place.websiteUri} target="_blank" rel="noreferrer">
+                              公式サイト →
+                            </a>
+                          )
                         )}
                         {place.googleMapsUri && (
                           <a className="card-link card-link-maps" href={place.googleMapsUri} target="_blank" rel="noreferrer">
