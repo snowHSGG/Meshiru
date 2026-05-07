@@ -33,7 +33,7 @@ function MapBoundsFitter({ searchCenter, results }) {
     }
     const bounds = new window.google.maps.LatLngBounds()
     points.forEach(p => bounds.extend(p))
-    map.fitBounds(bounds, 80)
+    map.fitBounds(bounds, 120)
   }, [map, searchCenter, results])
   return null
 }
