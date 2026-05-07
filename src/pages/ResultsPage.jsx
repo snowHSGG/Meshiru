@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { APIProvider, Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps'
 import { searchRestaurants, getPhotoUrl, geocodeArea } from '../api/places'
@@ -48,7 +48,6 @@ export default function ResultsPage() {
   const [excludes, setExcludes] = useState(state?.excludes ?? [])
   const [excludeInput, setExcludeInput] = useState('')
   const [radius, setRadius] = useState(state?.radius ?? 1000)
-  const excludeComposingRef = useRef(false)
 
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(true)
@@ -302,10 +301,8 @@ export default function ResultsPage() {
                 placeholder="例：バー、もんじゃ"
                 value={excludeInput}
                 onChange={(e) => setExcludeInput(e.target.value)}
-                onCompositionEnd={() => { excludeComposingRef.current = true }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    if (excludeComposingRef.current) { excludeComposingRef.current = false; return }
+                  if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
                     const v = excludeInput.trim()
                     if (v && !excludes.includes(v)) setExcludes((prev) => [...prev, v])
                     setExcludeInput('')

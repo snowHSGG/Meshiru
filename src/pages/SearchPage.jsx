@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GENRES, PREFERENCES, SCENES, MEAL_TIMES, HOURS, BUDGET_STEPS, RADIUS_OPTIONS, todayStr } from '../constants/search'
 import { geocodeArea } from '../api/places'
@@ -24,7 +24,6 @@ export default function SearchPage() {
   const [excludes, setExcludes] = useState([])
   const [excludeInput, setExcludeInput] = useState('')
   const [radius, setRadius] = useState(1000)
-  const excludeComposingRef = useRef(false)
 
   function togglePreference(p) {
     setPreferences((prev) =>
@@ -257,10 +256,8 @@ export default function SearchPage() {
               placeholder="例：バー、もんじゃ"
               value={excludeInput}
               onChange={(e) => setExcludeInput(e.target.value)}
-              onCompositionEnd={() => { excludeComposingRef.current = true }}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  if (excludeComposingRef.current) { excludeComposingRef.current = false; return }
+                if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
                   const v = excludeInput.trim()
                   if (v && !excludes.includes(v)) setExcludes((prev) => [...prev, v])
                   setExcludeInput('')
