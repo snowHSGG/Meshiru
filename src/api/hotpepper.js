@@ -1,7 +1,16 @@
-export async function searchHotpepper({ lat, lng, keyword, mealTime }) {
+function toHotpepperRange(radius) {
+  if (radius <= 300) return '1'
+  if (radius <= 500) return '2'
+  if (radius <= 1000) return '3'
+  if (radius <= 2000) return '4'
+  return '5'
+}
+
+export async function searchHotpepper({ lat, lng, keyword, mealTime, radius }) {
   const params = new URLSearchParams({
     lat: lat ?? '35.6762',
     lng: lng ?? '139.6503',
+    range: toHotpepperRange(radius ?? 1000),
     ...(keyword ? { keyword } : {}),
     ...(mealTime === 'ランチ' ? { lunch: '1' } : {}),
     ...(mealTime === 'ディナー' ? { dinner: '1' } : {}),

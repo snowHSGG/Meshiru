@@ -43,7 +43,7 @@ export async function searchRestaurants({ genre, preferences, scene, budgetMin, 
 
   const [googleResults, hotpepperResults] = await Promise.all([
     fetchGoogle({ query, priceLevels, center, radius: searchRadius }),
-    searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, mealTime }),
+    searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, mealTime, radius: searchRadius }).catch(() => []),
   ])
 
   return mergeResults(googleResults, hotpepperResults, budgetMin, budgetMax, partySize, visitDate, visitTime, excludes)
@@ -64,10 +64,10 @@ async function fetchGoogle({ query, priceLevels, center, radius }) {
     languageCode: 'ja',
     maxResultCount: 20,
     includedType: 'restaurant',
-    locationRestriction: {
+    locationBias: {
       circle: {
         center: { latitude: center.lat, longitude: center.lng },
-        radius: radius ?? 1000.0,
+        radius: Math.max((radius ?? 1000) * 2, 2000),
       },
     },
     ...(priceLevels?.length ? { priceLevels } : {}),
