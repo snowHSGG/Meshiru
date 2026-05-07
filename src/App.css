@@ -62,3 +62,20 @@
 .hero-btn:hover {
   opacity: 0.85;
 }
+
+.footer {
+  padding: 1.5rem 2.5rem;
+  border-top: 1px solid #1a1a1a;
+  text-align: center;
+}
+
+.footer-link {
+  font-size: 0.8rem;
+  color: #444;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-link:hover {
+  color: #888;
+}
