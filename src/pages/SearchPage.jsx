@@ -155,7 +155,14 @@ export default function SearchPage() {
 
         <section className="filter-section">
           <h2 className="filter-label">料理ジャンル</h2>
-          <div className="chips">
+          <input
+            className="datetime-input"
+            type="text"
+            placeholder="自由入力（例：ビリヤニ、薬膳）"
+            value={genre}
+            onChange={(e) => setGenre(e.target.value)}
+          />
+          <div className="chips" style={{ marginTop: '0.5rem' }}>
             {GENRES.map((g) => (
               <button
                 key={g}
