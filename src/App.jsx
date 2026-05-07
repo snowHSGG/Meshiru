@@ -12,7 +12,7 @@ function TopPage() {
       </header>
       <main className="hero">
         <h1 className="hero-title">Meshiru</h1>
-        <p className="hero-sub">東京のベストを、あなたのために。</p>
+        <p className="hero-sub">迷わない。あなたのためのベスト３。</p>
         <button className="hero-btn" onClick={() => navigate('/search')}>お店を探す</button>
       </main>
     </div>
