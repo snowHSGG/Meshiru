@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { APIProvider, Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps'
+import { APIProvider, Map, AdvancedMarker, Pin, useMap } from '@vis.gl/react-google-maps'
 import { searchRestaurants, getPhotoUrl, geocodeArea } from '../api/places'
 import AreaAutocomplete from '../components/AreaAutocomplete'
 import { GENRES, PREFERENCES, SCENES, MEAL_TIMES, HOURS, BUDGET_STEPS, RADIUS_OPTIONS, todayStr } from '../constants/search'
@@ -17,6 +17,26 @@ const GOOGLE_PRICE_RANGE = {
 }
 
 const RANK_COLORS = ['#c9a227', '#8a8a8a', '#a0522d']
+
+function MapBoundsFitter({ searchCenter, results }) {
+  const map = useMap()
+  useEffect(() => {
+    if (!map || !searchCenter) return
+    const points = [
+      { lat: searchCenter.lat, lng: searchCenter.lng },
+      ...results.filter(p => p.location).map(p => ({ lat: p.location.latitude, lng: p.location.longitude })),
+    ]
+    if (points.length <= 1) {
+      map.setCenter(points[0])
+      map.setZoom(15)
+      return
+    }
+    const bounds = new window.google.maps.LatLngBounds()
+    points.forEach(p => bounds.extend(p))
+    map.fitBounds(bounds, 80)
+  }, [map, searchCenter, results])
+  return null
+}
 
 function buildHotpepperUrl(baseUrl, visitDate, visitTime) {
   if (!baseUrl) return null
@@ -437,6 +457,7 @@ export default function ResultsPage() {
               mapId="meshiru-map"
               style={{ width: '100%', height: '100%' }}
             >
+              <MapBoundsFitter searchCenter={searchCenter} results={results} />
               {searchCenter && (
                 <AdvancedMarker position={{ lat: searchCenter.lat, lng: searchCenter.lng }}>
                   <Pin background="#1a73e8" borderColor="#1557b0" glyphColor="#fff" glyph="★" />
