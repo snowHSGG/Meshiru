@@ -58,7 +58,36 @@ function haversineDistance(lat1, lng1, lat2, lng2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
-async function fetchGoogle({ query, priceLevels, center, radius }) {
+function offsetCenter(center, distanceM, bearingDeg) {
+  const R = 6371000
+  const lat1 = center.lat * Math.PI / 180
+  const lng1 = center.lng * Math.PI / 180
+  const bearing = bearingDeg * Math.PI / 180
+  const d = distanceM / R
+  const lat2 = Math.asin(Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(bearing))
+  const lng2 = lng1 + Math.atan2(Math.sin(bearing) * Math.sin(d) * Math.cos(lat1), Math.cos(d) - Math.sin(lat1) * Math.sin(lat2))
+  return { lat: lat2 * 180 / Math.PI, lng: lng2 * 180 / Math.PI }
+}
+
+const FIELD_MASK = [
+  'places.id',
+  'places.displayName',
+  'places.rating',
+  'places.userRatingCount',
+  'places.formattedAddress',
+  'places.priceLevel',
+  'places.editorialSummary',
+  'places.primaryTypeDisplayName',
+  'places.location',
+  'places.websiteUri',
+  'places.googleMapsUri',
+  'places.photos',
+  'places.servesDinner',
+  'places.servesLunch',
+  'places.regularOpeningHours',
+].join(',')
+
+async function callGoogleAPI({ query, priceLevels, center, biasRadius }) {
   const body = {
     textQuery: `${query || '飲食店'}`,
     languageCode: 'ja',
@@ -67,40 +96,22 @@ async function fetchGoogle({ query, priceLevels, center, radius }) {
     locationBias: {
       circle: {
         center: { latitude: center.lat, longitude: center.lng },
-        radius: Math.max((radius ?? 1000) * 2, 2000),
+        radius: biasRadius,
       },
     },
     ...(priceLevels?.length ? { priceLevels } : {}),
   }
-
   const res = await fetch('https://places.googleapis.com/v1/places:searchText', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Goog-Api-Key': API_KEY,
-      'X-Goog-FieldMask': [
-        'places.displayName',
-        'places.rating',
-        'places.userRatingCount',
-        'places.formattedAddress',
-        'places.priceLevel',
-        'places.editorialSummary',
-        'places.primaryTypeDisplayName',
-        'places.location',
-        'places.websiteUri',
-        'places.googleMapsUri',
-        'places.photos',
-        'places.servesDinner',
-        'places.servesLunch',
-        'places.regularOpeningHours',
-      ].join(','),
-    },
+    headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': API_KEY, 'X-Goog-FieldMask': FIELD_MASK },
     body: JSON.stringify(body),
   })
-
   const data = await res.json()
-  const maxRadius = radius ?? 1000
-  return (data.places ?? []).filter((p) => {
+  return data.places ?? []
+}
+
+function filterByRadius(places, center, maxRadius) {
+  return places.filter((p) => {
     if (p.servesDinner === false && p.servesLunch === false) return false
     if (p.location) {
       const dist = haversineDistance(center.lat, center.lng, p.location.latitude, p.location.longitude)
@@ -108,6 +119,29 @@ async function fetchGoogle({ query, priceLevels, center, radius }) {
     }
     return true
   })
+}
+
+async function fetchGoogle({ query, priceLevels, center, radius }) {
+  const biasRadius = Math.max(radius * 2, 2000)
+  const places = await callGoogleAPI({ query, priceLevels, center, biasRadius })
+  const filtered = filterByRadius(places, center, radius)
+  if (filtered.length >= 3) return filtered
+
+  const offsetDist = radius * 0.5
+  const offsetPlaces = (await Promise.all(
+    [0, 90, 180, 270].map((bearing) =>
+      callGoogleAPI({ query, priceLevels, center: offsetCenter(center, offsetDist, bearing), biasRadius })
+    )
+  )).flat()
+
+  const seen = new Set(places.map((p) => p.id).filter(Boolean))
+  const newPlaces = offsetPlaces.filter((p) => {
+    if (!p.id || seen.has(p.id)) return false
+    seen.add(p.id)
+    return true
+  })
+
+  return filterByRadius([...places, ...newPlaces], center, radius)
 }
 
 function isOpenAt(periods, dateStr, timeStr) {
