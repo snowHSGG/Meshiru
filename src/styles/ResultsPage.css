@@ -150,9 +150,8 @@
   bottom: 2rem;
   left: 50%;
   transform: translateX(-50%);
-  background: #1a1a1a;
-  border: 1px solid #333;
-  color: #aaa;
+  background: #f0f0f0;
+  color: #0f0f0f;
   font-size: 0.85rem;
   letter-spacing: 0.08em;
   padding: 0.6rem 1.5rem;
