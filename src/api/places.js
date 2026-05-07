@@ -46,7 +46,8 @@ export async function searchRestaurants({ genre, preferences, scene, budgetMin, 
     searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, mealTime, radius: searchRadius }).catch(() => []),
   ])
 
-  return mergeResults(googleResults, hotpepperResults, budgetMin, budgetMax, partySize, visitDate, visitTime, excludes)
+  const places = mergeResults(googleResults, hotpepperResults, budgetMin, budgetMax, partySize, visitDate, visitTime, excludes)
+  return { places, center }
 }
 
 function haversineDistance(lat1, lng1, lat2, lng2) {

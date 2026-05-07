@@ -50,6 +50,7 @@ export default function ResultsPage() {
   const [radius, setRadius] = useState(state?.radius ?? 1000)
 
   const [results, setResults] = useState([])
+  const [searchCenter, setSearchCenter] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selected, setSelected] = useState(null)
@@ -59,7 +60,7 @@ export default function ResultsPage() {
     setError(null)
     setSelected(null)
     searchRestaurants(filters)
-      .then(setResults)
+      .then(({ places, center }) => { setResults(places); setSearchCenter(center) })
       .catch(() => setError('検索に失敗しました。'))
       .finally(() => setLoading(false))
   }
@@ -429,6 +430,11 @@ export default function ResultsPage() {
               mapId="meshiru-map"
               style={{ width: '100%', height: '100%' }}
             >
+              {searchCenter && (
+                <AdvancedMarker position={{ lat: searchCenter.lat, lng: searchCenter.lng }}>
+                  <Pin background="#1a73e8" borderColor="#1557b0" glyphColor="#fff" glyph="★" />
+                </AdvancedMarker>
+              )}
               {results.map((place, i) => (
                 place.location && (
                   <AdvancedMarker
