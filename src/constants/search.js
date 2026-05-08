@@ -33,3 +33,8 @@ export const BUDGET_STEPS = [
 export function todayStr() {
   return new Date().toISOString().slice(0, 10)
 }
+
+export function currentHourStr() {
+  const h = new Date().getHours()
+  return h >= 9 ? `${h}:00` : '9:00'
+}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { GENRES, PREFERENCES, SCENES, MEAL_TIMES, HOURS, BUDGET_STEPS, RADIUS_OPTIONS, todayStr } from '../constants/search'
+import { GENRES, PREFERENCES, SCENES, MEAL_TIMES, HOURS, BUDGET_STEPS, RADIUS_OPTIONS, todayStr, currentHourStr } from '../constants/search'
 import { geocodeArea } from '../api/places'
 import AreaAutocomplete from '../components/AreaAutocomplete'
 import '../styles/SearchPage.css'
@@ -14,8 +14,8 @@ export default function SearchPage() {
   const [budgetMax, setBudgetMax] = useState('')
   const [partySize, setPartySize] = useState('')
   const [mealTime, setMealTime] = useState('')
-  const [visitDate, setVisitDate] = useState('')
-  const [visitTime, setVisitTime] = useState('')
+  const [visitDate, setVisitDate] = useState(todayStr())
+  const [visitTime, setVisitTime] = useState(currentHourStr())
   const [locMode, setLocMode] = useState('current')
   const [areaText, setAreaText] = useState('')
   const [area, setArea] = useState(null)

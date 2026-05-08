@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { APIProvider, Map, AdvancedMarker, Pin, useMap } from '@vis.gl/react-google-maps'
 import { searchRestaurants, getPhotoUrl, geocodeArea } from '../api/places'
 import AreaAutocomplete from '../components/AreaAutocomplete'
-import { GENRES, PREFERENCES, SCENES, MEAL_TIMES, HOURS, BUDGET_STEPS, RADIUS_OPTIONS, todayStr } from '../constants/search'
+import { GENRES, PREFERENCES, SCENES, MEAL_TIMES, HOURS, BUDGET_STEPS, RADIUS_OPTIONS, todayStr, currentHourStr } from '../constants/search'
 import '../styles/ResultsPage.css'
 import '../styles/SearchPage.css'
 
@@ -54,8 +54,8 @@ export default function ResultsPage() {
   const [budgetMax, setBudgetMax] = useState(state?.budgetMax ?? '')
   const [partySize, setPartySize] = useState(state?.partySize ?? '')
   const [mealTime, setMealTime] = useState(state?.mealTime ?? '')
-  const [visitDate, setVisitDate] = useState(state?.visitDate ?? '')
-  const [visitTime, setVisitTime] = useState(state?.visitTime ?? '')
+  const [visitDate, setVisitDate] = useState(state?.visitDate ?? todayStr())
+  const [visitTime, setVisitTime] = useState(state?.visitTime ?? currentHourStr())
   const [locMode, setLocMode] = useState(state?.locMode ?? 'area')
   const [area, setArea] = useState(state?.area ?? null)
   const [areaText, setAreaText] = useState(state?.areaText ?? '')
