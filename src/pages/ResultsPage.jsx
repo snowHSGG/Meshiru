@@ -65,18 +65,22 @@ export default function ResultsPage() {
   const [excludeInput, setExcludeInput] = useState('')
   const [radius, setRadius] = useState(state?.radius ?? 1000)
 
-  const [results, setResults] = useState([])
+  const [allResults, setAllResults] = useState([])
+  const [excludedIds, setExcludedIds] = useState([])
   const [searchCenter, setSearchCenter] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selected, setSelected] = useState(null)
 
+  const results = allResults.filter((p) => !excludedIds.includes(p.id ?? p.googleMapsUri)).slice(0, 3)
+
   function runSearch(filters) {
     setLoading(true)
     setError(null)
     setSelected(null)
+    setExcludedIds([])
     searchRestaurants(filters)
-      .then(({ places, center }) => { setResults(places); setSearchCenter(center) })
+      .then(({ places, center }) => { setAllResults(places); setSearchCenter(center) })
       .catch(() => setError('検索に失敗しました。'))
       .finally(() => setLoading(false))
   }
@@ -125,9 +129,10 @@ export default function ResultsPage() {
 
   const [copiedIndex, setCopiedIndex] = useState(null)
 
-  function handleExclude(i) {
-    setResults((prev) => prev.filter((_, idx) => idx !== i))
-    if (selected === i) setSelected(null)
+  function handleExclude(place) {
+    const id = place.id ?? place.googleMapsUri
+    setExcludedIds((prev) => [...prev, id])
+    setSelected(null)
   }
 
   function handleShare(place, i) {
@@ -416,7 +421,7 @@ export default function ResultsPage() {
                   )}
                   <button
                     className="card-exclude-btn"
-                    onClick={(e) => { e.stopPropagation(); handleExclude(i) }}
+                    onClick={(e) => { e.stopPropagation(); handleExclude(place) }}
                   >除外</button>
                   <div className="card-inner">
                     <div className="card-rank">#{i + 1}</div>

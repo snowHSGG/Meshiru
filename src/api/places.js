@@ -238,7 +238,6 @@ function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax, partyS
   const bayesian = (r, n) => (100 * 4.0 + n * r) / (100 + n)
   return merged
     .sort((a, b) => bayesian(b.rating, b.userRatingCount ?? 0) - bayesian(a.rating, a.userRatingCount ?? 0))
-    .slice(0, 3)
 }
 
 async function resolveCenter({ locMode, area }) {
