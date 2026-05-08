@@ -1,4 +1,4 @@
-export const GENRES = ['焼き鳥', '焼肉', '寿司', '居酒屋', 'ラーメン', 'カフェ', '中華', 'イタリアン', 'フレンチ', 'カレー']
+export const GENRES = ['焼き鳥', '焼肉', '寿司', '居酒屋', 'ラーメン', '中華', 'イタリアン', 'フレンチ', 'カレー']
 export const PREFERENCES = ['コスパ重視', '個室あり']
 export const SCENES = ['デート', '女子会', '接待', '誕生日', '記念日', '23時以降']
 export const MEAL_TIMES = ['ランチ', 'ディナー']
