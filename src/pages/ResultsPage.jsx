@@ -125,6 +125,11 @@ export default function ResultsPage() {
 
   const [copiedIndex, setCopiedIndex] = useState(null)
 
+  function handleExclude(i) {
+    setResults((prev) => prev.filter((_, idx) => idx !== i))
+    if (selected === i) setSelected(null)
+  }
+
   function handleShare(place, i) {
     const name = place.displayName?.text ?? ''
     const rating = place.rating ? `★${place.rating.toFixed(1)}` : ''
@@ -409,6 +414,10 @@ export default function ResultsPage() {
                       alt={place.displayName?.text}
                     />
                   )}
+                  <button
+                    className="card-exclude-btn"
+                    onClick={(e) => { e.stopPropagation(); handleExclude(i) }}
+                  >除外</button>
                   <div className="card-inner">
                     <div className="card-rank">#{i + 1}</div>
                     <div className="card-body">
