@@ -414,7 +414,7 @@ export default function ResultsPage() {
                   <button
                     className="card-exclude-btn"
                     onClick={(e) => { e.stopPropagation(); handleExclude(place) }}
-                  >候補から除外</button>
+                  >おすすめから除外</button>
                   <div className="card-inner">
                     <div className="card-rank">#{i + 1}</div>
                     <div className="card-body">
