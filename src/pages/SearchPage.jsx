@@ -208,8 +208,8 @@ export default function SearchPage() {
                 onClick={() => {
                   const next = scene === s ? '' : s
                   setScene(next)
-                  if (next === '〆') setVisitTime('23:00')
-                  else if (scene === '〆') setVisitTime('')
+                  if (next === '23時以降') setVisitTime('23:00')
+                  else if (scene === '23時以降') setVisitTime('')
                 }}
               >{s}</button>
             ))}
