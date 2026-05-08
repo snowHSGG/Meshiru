@@ -120,6 +120,13 @@
   color: #f0f0f0;
 }
 
+.results-subtitle {
+  font-size: 0.75rem;
+  color: #444;
+  margin-top: 0.25rem;
+  letter-spacing: 0.03em;
+}
+
 .back-btn {
   background: transparent;
   border: none;

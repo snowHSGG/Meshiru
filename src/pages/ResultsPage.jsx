@@ -374,7 +374,10 @@ export default function ResultsPage() {
         {/* ── 中央: 結果カード ── */}
         <div className="results-content">
           <div className="results-header">
-            <h1 className="results-title">おすすめ 3 選</h1>
+            <div>
+              <h1 className="results-title">おすすめ 3 選</h1>
+              <p className="results-subtitle">Googleの評価・レビュー数をもとにランキング</p>
+            </div>
             <button className="back-btn" onClick={() => navigate('/search')}>最初から</button>
           </div>
 
@@ -422,9 +425,6 @@ export default function ResultsPage() {
                         <span className="card-count">({place.userRatingCount?.toLocaleString()}件)</span>
                         {place.primaryTypeDisplayName && (
                           <span className="card-type">{place.primaryTypeDisplayName.text}</span>
-                        )}
-                        {!place.priceVerified && (
-                          <span className="card-badge-unverified">価格未確認</span>
                         )}
                       </div>
                       {priceRange && (
