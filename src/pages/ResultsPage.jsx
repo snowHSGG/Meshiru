@@ -80,7 +80,7 @@ export default function ResultsPage() {
     setSelected(null)
     setExcludedIds([])
     searchRestaurants(filters)
-      .then(({ places, center }) => { setAllResults(places); setSearchCenter(center) })
+      .then(({ places, center }) => { setAllResults(places); setSearchCenter(center); window.scrollTo(0, 0) })
       .catch(() => setError('検索に失敗しました。'))
       .finally(() => setLoading(false))
   }
