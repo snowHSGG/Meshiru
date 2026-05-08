@@ -79,8 +79,9 @@ export default function ResultsPage() {
     setError(null)
     setSelected(null)
     setExcludedIds([])
+    window.scrollTo(0, 0)
     searchRestaurants(filters)
-      .then(({ places, center }) => { setAllResults(places); setSearchCenter(center); window.scrollTo(0, 0) })
+      .then(({ places, center }) => { setAllResults(places); setSearchCenter(center) })
       .catch(() => setError('検索に失敗しました。'))
       .finally(() => setLoading(false))
   }
