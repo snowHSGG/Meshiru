@@ -155,11 +155,17 @@ function isOpenAt(periods, dateStr, timeStr) {
   })
 }
 
+function normName(s) {
+  return s.replace(/[\s　・＆&()（）【】「」『』]/g, '').toLowerCase()
+}
+
 function findMatch(shops, name, lat, lng) {
+  const n = normName(name)
   return shops.find((s) => {
-    const sameName = s.name.includes(name.slice(0, 4)) || name.includes(s.name.slice(0, 4))
+    const sn = normName(s.name)
+    const sameName = n.includes(sn.slice(0, 5)) || sn.includes(n.slice(0, 5)) || n.includes(sn) || sn.includes(n)
     const nearby = lat && lng
-      ? Math.abs(s.lat - lat) < 0.001 && Math.abs(s.lng - lng) < 0.001
+      ? Math.abs(s.lat - lat) < 0.002 && Math.abs(s.lng - lng) < 0.002
       : false
     return sameName && nearby
   })
