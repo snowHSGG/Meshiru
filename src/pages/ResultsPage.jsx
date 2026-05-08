@@ -127,23 +127,20 @@ export default function ResultsPage() {
   }
 
 
-  const [copied, setCopied] = useState(false)
+  const [copiedIndex, setCopiedIndex] = useState(null)
 
-  function handleShare() {
-    const text = results.map((p, i) => {
-      const name = p.displayName?.text ?? ''
-      const rating = p.rating ? `★${p.rating.toFixed(1)}` : ''
-      const maps = p.googleMapsUri ?? ''
-      return `#${i + 1} ${name} ${rating}\n${maps}`
-    }).join('\n\n')
-    const full = `【Meshiru おすすめ3選】\n\n${text}\n\nhttps://meshiru-neon.vercel.app`
+  function handleShare(place, i) {
+    const name = place.displayName?.text ?? ''
+    const rating = place.rating ? `★${place.rating.toFixed(1)}` : ''
+    const maps = place.googleMapsUri ?? ''
+    const text = `${name} ${rating}\n${maps}`
 
     if (navigator.share) {
-      navigator.share({ text: full })
+      navigator.share({ text })
     } else {
-      navigator.clipboard.writeText(full).then(() => {
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+      navigator.clipboard.writeText(text).then(() => {
+        setCopiedIndex(i)
+        setTimeout(() => setCopiedIndex(null), 2000)
       })
     }
   }
@@ -382,14 +379,7 @@ export default function ResultsPage() {
         <div className="results-content">
           <div className="results-header">
             <h1 className="results-title">おすすめ 3 選</h1>
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-              {!loading && results.length > 0 && (
-                <button className="share-btn" onClick={handleShare}>
-                  {copied ? 'コピーしました' : 'シェア'}
-                </button>
-              )}
-              <button className="back-btn" onClick={() => navigate('/search')}>最初から</button>
-            </div>
+            <button className="back-btn" onClick={() => navigate('/search')}>最初から</button>
           </div>
 
           {(visitDate || visitTime) && (
@@ -446,7 +436,8 @@ export default function ResultsPage() {
                         </p>
                       )}
                       <p className="card-address">{place.formattedAddress}</p>
-                      <div className="card-links">
+                      <div className="card-actions">
+                        <div className="card-links">
                         {place.hotpepperUrl ? (
                           <a
                             className="card-link card-link-reserve"
@@ -468,6 +459,13 @@ export default function ResultsPage() {
                             Google Maps →
                           </a>
                         )}
+                        </div>
+                        <button
+                          className="share-btn"
+                          onClick={(e) => { e.stopPropagation(); handleShare(place, i) }}
+                        >
+                          {copiedIndex === i ? 'コピーしました' : 'シェア'}
+                        </button>
                       </div>
                     </div>
                   </div>
