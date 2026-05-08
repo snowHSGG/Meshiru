@@ -289,7 +289,12 @@ export default function ResultsPage() {
                 <button
                   key={s}
                   className={`chip ${scene === s ? 'active' : ''}`}
-                  onClick={() => setScene(scene === s ? '' : s)}
+                  onClick={() => {
+                    const next = scene === s ? '' : s
+                    setScene(next)
+                    if (next === '〆') setVisitTime('23:00')
+                    else if (scene === '〆') setVisitTime('')
+                  }}
                 >{s}</button>
               ))}
             </div>
