@@ -127,6 +127,27 @@ export default function ResultsPage() {
   }
 
 
+  const [copied, setCopied] = useState(false)
+
+  function handleShare() {
+    const text = results.map((p, i) => {
+      const name = p.displayName?.text ?? ''
+      const rating = p.rating ? `★${p.rating.toFixed(1)}` : ''
+      const maps = p.googleMapsUri ?? ''
+      return `#${i + 1} ${name} ${rating}\n${maps}`
+    }).join('\n\n')
+    const full = `【Meshiru おすすめ3選】\n\n${text}\n\nhttps://meshiru-neon.vercel.app`
+
+    if (navigator.share) {
+      navigator.share({ text: full })
+    } else {
+      navigator.clipboard.writeText(full).then(() => {
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      })
+    }
+  }
+
   const mapCenter = results[0]?.location
     ? { lat: results[0].location.latitude, lng: results[0].location.longitude }
     : (area ? { lat: area.lat, lng: area.lng } : { lat: 35.6762, lng: 139.6503 })
@@ -361,7 +382,14 @@ export default function ResultsPage() {
         <div className="results-content">
           <div className="results-header">
             <h1 className="results-title">おすすめ 3 選</h1>
-            <button className="back-btn" onClick={() => navigate('/search')}>最初から</button>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+              {!loading && results.length > 0 && (
+                <button className="share-btn" onClick={handleShare}>
+                  {copied ? 'コピーしました' : 'シェア'}
+                </button>
+              )}
+              <button className="back-btn" onClick={() => navigate('/search')}>最初から</button>
+            </div>
           </div>
 
           {(visitDate || visitTime) && (
