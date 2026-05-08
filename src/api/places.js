@@ -4,11 +4,12 @@ const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY
 
 
 const LEVEL_TO_HP_CODES = {
-  PRICE_LEVEL_INEXPENSIVE:    ['B001', 'B002'],
-  PRICE_LEVEL_MODERATE:       ['B003', 'B004', 'B005'],
-  PRICE_LEVEL_EXPENSIVE:      ['B006', 'B007', 'B008'],
-  PRICE_LEVEL_VERY_EXPENSIVE: ['B009', 'B010', 'B011', 'B012', 'B013'],
+  PRICE_LEVEL_INEXPENSIVE: ['B001', 'B002'],
+  PRICE_LEVEL_MODERATE:    ['B003', 'B004', 'B005'],
+  PRICE_LEVEL_EXPENSIVE:   ['B006', 'B007', 'B008', 'B009', 'B010', 'B011', 'B012', 'B013'],
 }
+
+const GOOGLE_EXPENSIVE_LEVELS = ['PRICE_LEVEL_EXPENSIVE', 'PRICE_LEVEL_VERY_EXPENSIVE']
 
 export async function searchRestaurants({ genre, preferences, scene, priceLevels, partySize, mealTime, visitDate, visitTime, locMode, area, excludes, radius }) {
   const query = buildQuery({ genre, preferences, scene, mealTime })
@@ -17,7 +18,7 @@ export async function searchRestaurants({ genre, preferences, scene, priceLevels
 
   const [googleResults, hotpepperResults] = await Promise.all([
     fetchGoogle({ query, priceLevels, center, radius: searchRadius }),
-    searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, mealTime, radius: searchRadius }).catch(() => []),
+    searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, mealTime, radius: searchRadius, freeDrink: preferences?.includes('飲み放題あり') }).catch(() => []),
   ])
 
   const places = mergeResults(googleResults, hotpepperResults, priceLevels, partySize, visitDate, visitTime, excludes)
@@ -74,7 +75,7 @@ async function callGoogleAPI({ query, priceLevels, center, biasRadius }) {
         radius: biasRadius,
       },
     },
-    ...(priceLevels?.length ? { priceLevels } : {}),
+    ...(priceLevels?.length ? { priceLevels: priceLevels.flatMap((l) => l === 'PRICE_LEVEL_EXPENSIVE' ? GOOGLE_EXPENSIVE_LEVELS : [l]) } : {}),
   }
   const res = await fetch('https://places.googleapis.com/v1/places:searchText', {
     method: 'POST',
@@ -190,7 +191,8 @@ function mergeResults(googlePlaces, hotpepperShops, priceLevels, partySize, visi
       if (matched?.budgetCode) {
         if (!allowedHpCodes.includes(matched.budgetCode)) return null
       } else if (place.priceLevel) {
-        if (!priceLevels.includes(place.priceLevel)) return null
+        const effectiveLevel = GOOGLE_EXPENSIVE_LEVELS.includes(place.priceLevel) ? 'PRICE_LEVEL_EXPENSIVE' : place.priceLevel
+        if (!priceLevels.includes(effectiveLevel)) return null
       }
     }
 

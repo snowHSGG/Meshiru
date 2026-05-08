@@ -54,7 +54,7 @@ export default function ResultsPage() {
   const [partySize, setPartySize] = useState(state?.partySize ?? '')
   const [mealTime, setMealTime] = useState(state?.mealTime ?? '')
   const [visitDate, setVisitDate] = useState(state?.visitDate ?? todayStr())
-  const [visitTime, setVisitTime] = useState(state?.visitTime ?? currentHourStr())
+  const [visitTime, setVisitTime] = useState(state?.visitTime ?? '')
   const [locMode, setLocMode] = useState(state?.locMode ?? 'area')
   const [area, setArea] = useState(state?.area ?? null)
   const [areaText, setAreaText] = useState(state?.areaText ?? '')
@@ -293,6 +293,8 @@ export default function ResultsPage() {
                     setScene(next)
                     if (next === '23時以降') setVisitTime('23:00')
                     else if (scene === '23時以降') setVisitTime('')
+                    if (next === '飲み会') setPreferences((prev) => prev.includes('飲み放題あり') ? prev : [...prev, '飲み放題あり'])
+                    else if (scene === '飲み会') setPreferences((prev) => prev.filter((p) => p !== '飲み放題あり'))
                   }}
                 >{s}</button>
               ))}

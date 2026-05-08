@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  const { lat, lng, keyword, range, lunch, dinner } = req.query
+  const { lat, lng, keyword, range, lunch, dinner, free_drink } = req.query
 
   const params = new URLSearchParams({
     key: process.env.HOTPEPPER_API_KEY,
@@ -11,6 +11,7 @@ export default async function handler(req, res) {
     ...(keyword ? { keyword } : {}),
     ...(lunch === '1' ? { lunch: '1' } : {}),
     ...(dinner === '1' ? { dinner: '1' } : {}),
+    ...(free_drink === '1' ? { free_drink: '1' } : {}),
   })
 
   const response = await fetch(
