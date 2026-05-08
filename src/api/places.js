@@ -271,6 +271,6 @@ function buildQuery({ genre, preferences, scene, mealTime }) {
   if (scene) parts.push(scene)
   if (preferences?.includes('コスパ重視')) parts.push('コスパ')
   if (preferences?.includes('個室あり')) parts.push('個室')
-  if (preferences?.includes('飲み放題あり')) parts.push('飲み放題')
+
   return parts.join(' ')
 }
