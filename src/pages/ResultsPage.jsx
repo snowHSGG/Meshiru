@@ -22,7 +22,7 @@ function MapBoundsFitter({ searchCenter, radius }) {
   const map = useMap()
   useEffect(() => {
     if (!map || !searchCenter) return
-    const r = (radius + 500)
+    const r = (radius + 100)
     const latOffset = r / 111320
     const lngOffset = r / (111320 * Math.cos(searchCenter.lat * Math.PI / 180))
     const bounds = new window.google.maps.LatLngBounds(
