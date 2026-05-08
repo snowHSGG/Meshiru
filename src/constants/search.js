@@ -11,6 +11,13 @@ export const RADIUS_OPTIONS = [
   { label: '2km',  value: 2000 },
 ]
 
+export const PRICE_LEVELS = [
+  { label: '〜¥1,000',      value: 'PRICE_LEVEL_INEXPENSIVE' },
+  { label: '¥1,000〜3,000', value: 'PRICE_LEVEL_MODERATE' },
+  { label: '¥3,000〜6,000', value: 'PRICE_LEVEL_EXPENSIVE' },
+  { label: '¥6,000〜',      value: 'PRICE_LEVEL_VERY_EXPENSIVE' },
+]
+
 export const BUDGET_STEPS = [
   { label: '¥ 1,000',  value: 1000 },
   { label: '¥ 2,000',  value: 2000 },

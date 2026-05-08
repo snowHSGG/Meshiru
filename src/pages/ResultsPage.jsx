@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { APIProvider, Map, AdvancedMarker, Pin, useMap } from '@vis.gl/react-google-maps'
 import { searchRestaurants, getPhotoUrl, geocodeArea } from '../api/places'
 import AreaAutocomplete from '../components/AreaAutocomplete'
-import { GENRES, PREFERENCES, SCENES, MEAL_TIMES, HOURS, BUDGET_STEPS, RADIUS_OPTIONS, todayStr, currentHourStr } from '../constants/search'
+import { GENRES, PREFERENCES, SCENES, MEAL_TIMES, HOURS, PRICE_LEVELS, RADIUS_OPTIONS, todayStr, currentHourStr } from '../constants/search'
 import '../styles/ResultsPage.css'
 import '../styles/SearchPage.css'
 
@@ -50,8 +50,7 @@ export default function ResultsPage() {
   const [genre, setGenre] = useState(state?.genre ?? '')
   const [preferences, setPreferences] = useState(state?.preferences ?? [])
   const [scene, setScene] = useState(state?.scene ?? '')
-  const [budgetMin, setBudgetMin] = useState(state?.budgetMin ?? '')
-  const [budgetMax, setBudgetMax] = useState(state?.budgetMax ?? '')
+  const [priceLevels, setPriceLevels] = useState(state?.priceLevels ?? [])
   const [partySize, setPartySize] = useState(state?.partySize ?? '')
   const [mealTime, setMealTime] = useState(state?.mealTime ?? '')
   const [visitDate, setVisitDate] = useState(state?.visitDate ?? todayStr())
@@ -87,7 +86,7 @@ export default function ResultsPage() {
   }
 
   useEffect(() => {
-    runSearch({ genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, visitDate, visitTime, locMode, area, excludes, radius })
+    runSearch({ genre, preferences, scene, priceLevels, partySize, mealTime, visitDate, visitTime, locMode, area, excludes, radius })
   }, [])
 
   async function handleResearch() {
@@ -103,7 +102,7 @@ export default function ResultsPage() {
       setArea(resolvedArea)
       setGeoError('')
     }
-    runSearch({ genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, visitDate, visitTime, locMode, area: resolvedArea, excludes, radius })
+    runSearch({ genre, preferences, scene, priceLevels, partySize, mealTime, visitDate, visitTime, locMode, area: resolvedArea, excludes, radius })
   }
 
   function togglePreference(p) {
@@ -321,32 +320,17 @@ export default function ResultsPage() {
           </section>
 
           <section className="filter-section">
-            <h2 className="filter-label">予算（1人あたり）</h2>
-            <div className="datetime-field">
-              <label className="datetime-label">下限</label>
-              <select
-                className="datetime-input"
-                value={budgetMin}
-                onChange={(e) => setBudgetMin(e.target.value)}
-              >
-                <option value="">指定なし</option>
-                {BUDGET_STEPS.map((s) => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
-                ))}
-              </select>
-            </div>
-            <div className="datetime-field" style={{ marginTop: '0.5rem' }}>
-              <label className="datetime-label">上限</label>
-              <select
-                className="datetime-input"
-                value={budgetMax}
-                onChange={(e) => setBudgetMax(e.target.value)}
-              >
-                <option value="">上限なし</option>
-                {BUDGET_STEPS.map((s) => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
-                ))}
-              </select>
+            <h2 className="filter-label">予算（1人あたり）<span className="filter-note">複数可</span></h2>
+            <div className="chips">
+              {PRICE_LEVELS.map((p) => (
+                <button
+                  key={p.value}
+                  className={`chip ${priceLevels.includes(p.value) ? 'active' : ''}`}
+                  onClick={() => setPriceLevels((prev) =>
+                    prev.includes(p.value) ? prev.filter((x) => x !== p.value) : [...prev, p.value]
+                  )}
+                >{p.label}</button>
+              ))}
             </div>
           </section>
 

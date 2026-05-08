@@ -2,42 +2,16 @@ import { searchHotpepper } from './hotpepper'
 
 const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY
 
-// HotPepper budget codes (B001-B013) → yen range
-const HP_CODE_MAX = {
-  B001: 500, B002: 1000, B003: 1500, B004: 2000, B005: 3000,
-  B006: 4000, B007: 5000, B008: 8000, B009: 10000,
-  B010: 15000, B011: 20000, B012: 30000, B013: Infinity,
-}
-const HP_CODE_MIN = {
-  B001: 0, B002: 501, B003: 1001, B004: 1501, B005: 2001,
-  B006: 3001, B007: 4001, B008: 5001, B009: 8001,
-  B010: 10001, B011: 15001, B012: 20001, B013: 30001,
+
+const LEVEL_TO_HP_CODES = {
+  PRICE_LEVEL_INEXPENSIVE:    ['B001', 'B002'],
+  PRICE_LEVEL_MODERATE:       ['B003', 'B004', 'B005'],
+  PRICE_LEVEL_EXPENSIVE:      ['B006', 'B007', 'B008'],
+  PRICE_LEVEL_VERY_EXPENSIVE: ['B009', 'B010', 'B011', 'B012', 'B013'],
 }
 
-// Google price level → yen range
-const GOOGLE_LEVEL_RANGE = {
-  PRICE_LEVEL_INEXPENSIVE: [0, 1000],
-  PRICE_LEVEL_MODERATE:    [1001, 3000],
-  PRICE_LEVEL_EXPENSIVE:   [3001, 6000],
-  PRICE_LEVEL_VERY_EXPENSIVE: [6001, Infinity],
-}
-
-function rangesOverlap(lo1, hi1, lo2, hi2) {
-  return lo1 <= hi2 && lo2 <= hi1
-}
-
-function rangeToPriceLevels(min, max) {
-  const lo = min !== '' && min != null ? Number(min) : 0
-  const hi = max !== '' && max != null ? Number(max) : Infinity
-  if (lo === 0 && hi === Infinity) return null
-  return Object.entries(GOOGLE_LEVEL_RANGE)
-    .filter(([, [glo, ghi]]) => rangesOverlap(lo, hi, glo, ghi))
-    .map(([level]) => level)
-}
-
-export async function searchRestaurants({ genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, visitDate, visitTime, locMode, area, excludes, radius }) {
+export async function searchRestaurants({ genre, preferences, scene, priceLevels, partySize, mealTime, visitDate, visitTime, locMode, area, excludes, radius }) {
   const query = buildQuery({ genre, preferences, scene, mealTime })
-  const priceLevels = rangeToPriceLevels(budgetMin, budgetMax)
   const center = await resolveCenter({ locMode, area })
   const searchRadius = radius ?? 1000
 
@@ -46,7 +20,7 @@ export async function searchRestaurants({ genre, preferences, scene, budgetMin, 
     searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, mealTime, radius: searchRadius }).catch(() => []),
   ])
 
-  const places = mergeResults(googleResults, hotpepperResults, budgetMin, budgetMax, partySize, visitDate, visitTime, excludes)
+  const places = mergeResults(googleResults, hotpepperResults, priceLevels, partySize, visitDate, visitTime, excludes)
   return { places, center }
 }
 
@@ -190,10 +164,11 @@ function findMatch(shops, name, lat, lng) {
   })
 }
 
-function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax, partySize, visitDate, visitTime, excludes) {
-  const lo = budgetMin !== '' && budgetMin != null ? Number(budgetMin) : 0
-  const hi = budgetMax !== '' && budgetMax != null ? Number(budgetMax) : Infinity
-  const hasRange = lo > 0 || hi < Infinity
+function mergeResults(googlePlaces, hotpepperShops, priceLevels, partySize, visitDate, visitTime, excludes) {
+  const hasLevelFilter = priceLevels?.length > 0
+  const allowedHpCodes = hasLevelFilter
+    ? priceLevels.flatMap((l) => LEVEL_TO_HP_CODES[l] ?? [])
+    : null
   const excludeTerms = (excludes ?? []).map((t) => t.toLowerCase())
 
   const merged = googlePlaces.map((place) => {
@@ -211,15 +186,12 @@ function mergeResults(googlePlaces, hotpepperShops, budgetMin, budgetMax, partyS
 
     const matched = findMatch(hotpepperShops, name, lat, lng)
 
-    if (matched && hasRange && matched.budgetCode) {
-      const codeMin = HP_CODE_MIN[matched.budgetCode] ?? 0
-      const codeMax = HP_CODE_MAX[matched.budgetCode] ?? Infinity
-      if (!rangesOverlap(lo, hi, codeMin, codeMax)) return null
-    }
-
-    if (!matched && hasRange && place.priceLevel) {
-      const [glo, ghi] = GOOGLE_LEVEL_RANGE[place.priceLevel] ?? [0, Infinity]
-      if (!rangesOverlap(lo, hi, glo, ghi)) return null
+    if (hasLevelFilter) {
+      if (matched?.budgetCode) {
+        if (!allowedHpCodes.includes(matched.budgetCode)) return null
+      } else if (place.priceLevel) {
+        if (!priceLevels.includes(place.priceLevel)) return null
+      }
     }
 
     if (matched && partySize && matched.capacity !== null && matched.capacity < Number(partySize)) {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { GENRES, PREFERENCES, SCENES, MEAL_TIMES, HOURS, BUDGET_STEPS, RADIUS_OPTIONS, todayStr, currentHourStr } from '../constants/search'
+import { GENRES, PREFERENCES, SCENES, MEAL_TIMES, HOURS, PRICE_LEVELS, RADIUS_OPTIONS, todayStr, currentHourStr } from '../constants/search'
 import { geocodeArea } from '../api/places'
 import AreaAutocomplete from '../components/AreaAutocomplete'
 import '../styles/SearchPage.css'
@@ -10,8 +10,7 @@ export default function SearchPage() {
   const [genre, setGenre] = useState('')
   const [preferences, setPreferences] = useState([])
   const [scene, setScene] = useState('')
-  const [budgetMin, setBudgetMin] = useState('')
-  const [budgetMax, setBudgetMax] = useState('')
+  const [priceLevels, setPriceLevels] = useState([])
   const [partySize, setPartySize] = useState('')
   const [mealTime, setMealTime] = useState('')
   const [visitDate, setVisitDate] = useState(todayStr())
@@ -70,7 +69,7 @@ export default function SearchPage() {
       setGeoError('')
     }
     navigate('/results', {
-      state: { genre, preferences, scene, budgetMin, budgetMax, partySize, mealTime, visitDate, visitTime, locMode, area: resolvedArea, areaText, excludes, radius },
+      state: { genre, preferences, scene, priceLevels, partySize, mealTime, visitDate, visitTime, locMode, area: resolvedArea, areaText, excludes, radius },
     })
   }
 
@@ -237,37 +236,17 @@ export default function SearchPage() {
         </section>
 
         <section className="filter-section">
-          <h2 className="filter-label">予算（1人あたり）</h2>
-          <div className="datetime-row">
-            <div className="datetime-field">
-              <label className="datetime-label">下限</label>
-              <select
-                className="datetime-input"
-                value={budgetMin}
-                onChange={(e) => setBudgetMin(e.target.value)}
-              >
-                <option value="">指定なし</option>
-                {BUDGET_STEPS.map((s) => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
-                ))}
-              </select>
-            </div>
-            <div className="datetime-field" style={{ alignSelf: 'flex-end', paddingBottom: '0.55rem', color: '#555', fontSize: '0.85rem' }}>
-              〜
-            </div>
-            <div className="datetime-field">
-              <label className="datetime-label">上限</label>
-              <select
-                className="datetime-input"
-                value={budgetMax}
-                onChange={(e) => setBudgetMax(e.target.value)}
-              >
-                <option value="">上限なし</option>
-                {BUDGET_STEPS.map((s) => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
-                ))}
-              </select>
-            </div>
+          <h2 className="filter-label">予算（1人あたり）<span className="filter-note">複数選択可</span></h2>
+          <div className="chips">
+            {PRICE_LEVELS.map((p) => (
+              <button
+                key={p.value}
+                className={`chip ${priceLevels.includes(p.value) ? 'active' : ''}`}
+                onClick={() => setPriceLevels((prev) =>
+                  prev.includes(p.value) ? prev.filter((x) => x !== p.value) : [...prev, p.value]
+                )}
+              >{p.label}</button>
+            ))}
           </div>
         </section>
 
