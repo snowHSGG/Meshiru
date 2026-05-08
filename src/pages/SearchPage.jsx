@@ -209,8 +209,6 @@ export default function SearchPage() {
                   setScene(next)
                   if (next === '23時以降') setVisitTime('23:00')
                   else if (scene === '23時以降') setVisitTime('')
-                  if (next === '飲み会') setPreferences((prev) => prev.includes('飲み放題あり') ? prev : [...prev, '飲み放題あり'])
-                  else if (scene === '飲み会') setPreferences((prev) => prev.filter((p) => p !== '飲み放題あり'))
                 }}
               >{s}</button>
             ))}

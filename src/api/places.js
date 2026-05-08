@@ -18,7 +18,7 @@ export async function searchRestaurants({ genre, preferences, scene, priceLevels
 
   const [googleResults, hotpepperResults] = await Promise.all([
     fetchGoogle({ query, priceLevels, center, radius: searchRadius }),
-    searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, mealTime, radius: searchRadius, freeDrink: preferences?.includes('飲み放題あり') }).catch(() => []),
+    searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, mealTime, radius: searchRadius }).catch(() => []),
   ])
 
   const places = mergeResults(googleResults, hotpepperResults, priceLevels, partySize, visitDate, visitTime, excludes)
