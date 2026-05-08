@@ -256,7 +256,7 @@ export default function SearchPage() {
             <input
               className="datetime-input exclude-input"
               type="text"
-              placeholder="例：バー、もんじゃ"
+              placeholder="例：バー、ファストフード"
               value={excludeInput}
               onChange={(e) => setExcludeInput(e.target.value)}
               onKeyDown={(e) => {
