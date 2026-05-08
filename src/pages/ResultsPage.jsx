@@ -18,23 +18,19 @@ const GOOGLE_PRICE_RANGE = {
 
 const RANK_COLORS = ['#c9a227', '#8a8a8a', '#a0522d']
 
-function MapBoundsFitter({ searchCenter, results }) {
+function MapBoundsFitter({ searchCenter, radius }) {
   const map = useMap()
   useEffect(() => {
     if (!map || !searchCenter) return
-    const points = [
-      { lat: searchCenter.lat, lng: searchCenter.lng },
-      ...results.filter(p => p.location).map(p => ({ lat: p.location.latitude, lng: p.location.longitude })),
-    ]
-    if (points.length <= 1) {
-      map.setCenter(points[0])
-      map.setZoom(15)
-      return
-    }
-    const bounds = new window.google.maps.LatLngBounds()
-    points.forEach(p => bounds.extend(p))
-    map.fitBounds(bounds, 120)
-  }, [map, searchCenter, results])
+    const r = (radius + 500)
+    const latOffset = r / 111320
+    const lngOffset = r / (111320 * Math.cos(searchCenter.lat * Math.PI / 180))
+    const bounds = new window.google.maps.LatLngBounds(
+      { lat: searchCenter.lat - latOffset, lng: searchCenter.lng - lngOffset },
+      { lat: searchCenter.lat + latOffset, lng: searchCenter.lng + lngOffset }
+    )
+    map.fitBounds(bounds, 0)
+  }, [map, searchCenter, radius])
   return null
 }
 
@@ -133,7 +129,7 @@ export default function ResultsPage() {
     const name = place.displayName?.text ?? ''
     const rating = place.rating ? `★${place.rating.toFixed(1)}` : ''
     const maps = place.googleMapsUri ?? ''
-    const text = `${name} ${rating}\n${maps}`
+    const text = `${name}\n${maps}`
 
     if (navigator.share) {
       navigator.share({ text })
@@ -485,7 +481,7 @@ export default function ResultsPage() {
               mapId="meshiru-map"
               style={{ width: '100%', height: '100%' }}
             >
-              <MapBoundsFitter searchCenter={searchCenter} results={results} />
+              <MapBoundsFitter searchCenter={searchCenter} radius={radius} />
               {searchCenter && (
                 <AdvancedMarker position={{ lat: searchCenter.lat, lng: searchCenter.lng }}>
                   <Pin background="#1a73e8" borderColor="#1557b0" glyphColor="#fff" glyph="★" />
