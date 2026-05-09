@@ -291,7 +291,7 @@ export function getPhotoUrl(photoName) {
 
 function buildQuery({ genre, scene }) {
   const parts = []
-  if (genre) parts.push(genre)
+  if (genre && genre !== 'カフェ') parts.push(genre)
   if (scene) parts.push(scene)
 
   return parts.join(' ')
