@@ -73,8 +73,8 @@ const FIELD_MASK = [
   'places.regularOpeningHours',
 ].join(',')
 
-async function callGoogleAPI({ query, priceLevels, center, radius, genre }) {
-  const includedType = GENRE_TO_TYPE[genre] ?? (genre ? null : 'restaurant')
+async function callGoogleAPI({ query, priceLevels, center, radius, genre, typeOverride }) {
+  const includedType = typeOverride !== undefined ? typeOverride : (GENRE_TO_TYPE[genre] ?? (genre ? null : 'restaurant'))
   const body = {
     textQuery: `${query || '飲食店'}`,
     languageCode: 'ja',
@@ -109,18 +109,31 @@ function filterByRadius(places, center, maxRadius, genre) {
 }
 
 async function fetchGoogle({ query, priceLevels, center, radius, genre }) {
-  const places = await callGoogleAPI({ query, priceLevels, center, radius, genre })
+  const types = genre === 'カフェ' ? ['cafe', 'coffee_shop'] : [undefined]
+
+  const initialResults = (await Promise.all(
+    types.map((typeOverride) => callGoogleAPI({ query, priceLevels, center, radius, genre, typeOverride }))
+  )).flat()
+
+  const seen = new Set()
+  const places = initialResults.filter((p) => {
+    if (!p.id || seen.has(p.id)) return false
+    seen.add(p.id)
+    return true
+  })
+
   const filtered = filterByRadius(places, center, radius, genre)
   if (filtered.length >= 3) return filtered
 
   const offsetDist = radius * 0.5
   const offsetPlaces = (await Promise.all(
-    [0, 90, 180, 270].map((bearing) =>
-      callGoogleAPI({ query, priceLevels, center: offsetCenter(center, offsetDist, bearing), radius, genre })
+    [0, 90, 180, 270].flatMap((bearing) =>
+      types.map((typeOverride) =>
+        callGoogleAPI({ query, priceLevels, center: offsetCenter(center, offsetDist, bearing), radius, genre, typeOverride })
+      )
     )
   )).flat()
 
-  const seen = new Set(places.map((p) => p.id).filter(Boolean))
   const newPlaces = offsetPlaces.filter((p) => {
     if (!p.id || seen.has(p.id)) return false
     seen.add(p.id)
