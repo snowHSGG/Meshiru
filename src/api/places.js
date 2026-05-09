@@ -4,13 +4,12 @@ const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY
 
 
 const GENRE_TO_TYPE = {
-  '居酒屋': 'izakaya_restaurant',
   'ラーメン': 'ramen_restaurant',
   '寿司': 'sushi_restaurant',
   '中華': 'chinese_restaurant',
   'イタリアン': 'italian_restaurant',
   'フレンチ': 'french_restaurant',
-  '焼肉': 'barbecue_restaurant',
+  '焼肉': 'yakiniku_restaurant',
 }
 
 const LEVEL_TO_HP_CODES = {
