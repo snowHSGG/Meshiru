@@ -73,10 +73,10 @@ const FIELD_MASK = [
   'places.regularOpeningHours',
 ].join(',')
 
-async function callGoogleAPI({ query, priceLevels, center, radius, genre, typeOverride }) {
+async function callGoogleAPI({ query, priceLevels, center, radius, genre, typeOverride, textQueryOverride }) {
   const includedType = typeOverride !== undefined ? typeOverride : (GENRE_TO_TYPE[genre] ?? (genre ? null : 'restaurant'))
   const body = {
-    textQuery: `${query || '飲食店'}`,
+    textQuery: textQueryOverride ?? (query || '飲食店'),
     languageCode: 'ja',
     maxResultCount: 20,
     ...(includedType ? { includedType } : {}),
@@ -109,10 +109,14 @@ function filterByRadius(places, center, maxRadius, genre) {
 }
 
 async function fetchGoogle({ query, priceLevels, center, radius, genre }) {
-  const types = genre === 'カフェ' ? ['cafe', 'coffee_shop'] : [undefined]
+  const calls = genre === 'カフェ'
+    ? [{ typeOverride: 'cafe', textQueryOverride: 'カフェ' }, { typeOverride: 'coffee_shop', textQueryOverride: 'コーヒー' }]
+    : [{}]
 
   const initialResults = (await Promise.all(
-    types.map((typeOverride) => callGoogleAPI({ query, priceLevels, center, radius, genre, typeOverride }))
+    calls.map(({ typeOverride, textQueryOverride }) =>
+      callGoogleAPI({ query, priceLevels, center, radius, genre, typeOverride, textQueryOverride })
+    )
   )).flat()
 
   const seen = new Set()
@@ -128,8 +132,8 @@ async function fetchGoogle({ query, priceLevels, center, radius, genre }) {
   const offsetDist = radius * 0.5
   const offsetPlaces = (await Promise.all(
     [0, 90, 180, 270].flatMap((bearing) =>
-      types.map((typeOverride) =>
-        callGoogleAPI({ query, priceLevels, center: offsetCenter(center, offsetDist, bearing), radius, genre, typeOverride })
+      calls.map(({ typeOverride, textQueryOverride }) =>
+        callGoogleAPI({ query, priceLevels, center: offsetCenter(center, offsetDist, bearing), radius, genre, typeOverride, textQueryOverride })
       )
     )
   )).flat()
@@ -291,7 +295,7 @@ export function getPhotoUrl(photoName) {
 
 function buildQuery({ genre, scene }) {
   const parts = []
-  if (genre && genre !== 'カフェ') parts.push(genre)
+  if (genre) parts.push(genre)
   if (scene) parts.push(scene)
 
   return parts.join(' ')
