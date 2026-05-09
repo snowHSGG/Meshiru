@@ -10,7 +10,6 @@ export default function SearchPage() {
   const [genre, setGenre] = useState('')
   const [scene, setScene] = useState('')
   const [priceLevels, setPriceLevels] = useState([])
-  const [partySize, setPartySize] = useState('')
   const [visitDate, setVisitDate] = useState(todayStr())
   const [visitTime, setVisitTime] = useState('')
   const [locMode, setLocMode] = useState('current')
@@ -61,7 +60,7 @@ function switchToCurrentLocation() {
       setGeoError('')
     }
     navigate('/results', {
-      state: { genre, scene, priceLevels, partySize, visitDate, visitTime, locMode, area: resolvedArea, areaText, excludes, radius },
+      state: { genre, scene, priceLevels, visitDate, visitTime, locMode, area: resolvedArea, areaText, excludes, radius },
     })
   }
 
@@ -178,26 +177,6 @@ function switchToCurrentLocation() {
                 }}
               >{s}</button>
             ))}
-          </div>
-        </section>
-
-        <section className="filter-section">
-          <h2 className="filter-label">人数</h2>
-          <div className="party-input-row">
-            <input
-              className="datetime-input party-input"
-              type="number"
-              min="1"
-              max="99"
-              placeholder="指定なし"
-              value={partySize}
-              onChange={(e) => {
-                const v = e.target.value
-                if (v === '') { setPartySize(''); return }
-                setPartySize(Math.min(99, Math.max(1, parseInt(v) || 1)))
-              }}
-            />
-            <span className="party-unit">人</span>
           </div>
         </section>
 

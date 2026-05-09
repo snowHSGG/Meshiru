@@ -21,7 +21,7 @@ const LEVEL_TO_HP_CODES = {
 
 const GOOGLE_EXPENSIVE_LEVELS = ['PRICE_LEVEL_EXPENSIVE', 'PRICE_LEVEL_VERY_EXPENSIVE']
 
-export async function searchRestaurants({ genre, scene, priceLevels, partySize, visitDate, visitTime, locMode, area, excludes, radius }) {
+export async function searchRestaurants({ genre, scene, priceLevels, visitDate, visitTime, locMode, area, excludes, radius }) {
   const query = buildQuery({ genre, scene })
   const center = await resolveCenter({ locMode, area })
   const searchRadius = radius ?? 1000
@@ -31,7 +31,7 @@ export async function searchRestaurants({ genre, scene, priceLevels, partySize, 
     searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, radius: searchRadius }).catch(() => []),
   ])
 
-  const places = mergeResults(googleResults, hotpepperResults, priceLevels, partySize, visitDate, visitTime, excludes)
+  const places = mergeResults(googleResults, hotpepperResults, priceLevels, visitDate, visitTime, excludes)
   return { places, center }
 }
 
@@ -182,7 +182,7 @@ function findMatch(shops, name, lat, lng) {
   })
 }
 
-function mergeResults(googlePlaces, hotpepperShops, priceLevels, partySize, visitDate, visitTime, excludes) {
+function mergeResults(googlePlaces, hotpepperShops, priceLevels, visitDate, visitTime, excludes) {
   const hasLevelFilter = priceLevels?.length > 0
   const allowedHpCodes = hasLevelFilter
     ? priceLevels.flatMap((l) => LEVEL_TO_HP_CODES[l] ?? [])
@@ -211,10 +211,6 @@ function mergeResults(googlePlaces, hotpepperShops, priceLevels, partySize, visi
         const effectiveLevel = GOOGLE_EXPENSIVE_LEVELS.includes(place.priceLevel) ? 'PRICE_LEVEL_EXPENSIVE' : place.priceLevel
         if (!priceLevels.includes(effectiveLevel)) return null
       }
-    }
-
-    if (matched && partySize && matched.capacity !== null && matched.capacity < Number(partySize)) {
-      return null
     }
 
     return {

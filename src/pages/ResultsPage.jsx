@@ -50,7 +50,6 @@ export default function ResultsPage() {
   const [genre, setGenre] = useState(state?.genre ?? '')
   const [scene, setScene] = useState(state?.scene ?? '')
   const [priceLevels, setPriceLevels] = useState(state?.priceLevels ?? [])
-  const [partySize, setPartySize] = useState(state?.partySize ?? '')
   const [visitDate, setVisitDate] = useState(state?.visitDate ?? todayStr())
   const [visitTime, setVisitTime] = useState(state?.visitTime ?? '')
   const [locMode, setLocMode] = useState(state?.locMode ?? 'area')
@@ -84,7 +83,7 @@ export default function ResultsPage() {
   }
 
   useEffect(() => {
-    runSearch({ genre, scene, priceLevels, partySize, visitDate, visitTime, locMode, area, excludes, radius })
+    runSearch({ genre, scene, priceLevels, visitDate, visitTime, locMode, area, excludes, radius })
   }, [])
 
   async function handleResearch() {
@@ -100,7 +99,7 @@ export default function ResultsPage() {
       setArea(resolvedArea)
       setGeoError('')
     }
-    runSearch({ genre, scene, priceLevels, partySize, visitDate, visitTime, locMode, area: resolvedArea, excludes, radius })
+    runSearch({ genre, scene, priceLevels, visitDate, visitTime, locMode, area: resolvedArea, excludes, radius })
   }
 
 function switchToCurrentLocation() {
@@ -262,26 +261,6 @@ function switchToCurrentLocation() {
                   }}
                 >{s}</button>
               ))}
-            </div>
-          </section>
-
-          <section className="filter-section">
-            <h2 className="filter-label">人数</h2>
-            <div className="party-input-row">
-              <input
-                className="datetime-input party-input"
-                type="number"
-                min="1"
-                max="99"
-                placeholder="指定なし"
-                value={partySize}
-                onChange={(e) => {
-                  const v = e.target.value
-                  if (v === '') { setPartySize(''); return }
-                  setPartySize(Math.min(99, Math.max(1, parseInt(v) || 1)))
-                }}
-              />
-              <span className="party-unit">人</span>
             </div>
           </section>
 
