@@ -74,17 +74,17 @@ const FIELD_MASK = [
   'places.regularOpeningHours',
 ].join(',')
 
-async function callGoogleAPI({ query, priceLevels, center, biasRadius, genre }) {
+async function callGoogleAPI({ query, priceLevels, center, radius, genre }) {
   const includedType = GENRE_TO_TYPE[genre] ?? (genre ? null : 'restaurant')
   const body = {
     textQuery: `${query || '飲食店'}`,
     languageCode: 'ja',
     maxResultCount: 20,
     ...(includedType ? { includedType } : {}),
-    locationBias: {
+    locationRestriction: {
       circle: {
         center: { latitude: center.lat, longitude: center.lng },
-        radius: biasRadius,
+        radius,
       },
     },
     ...(priceLevels?.length ? { priceLevels: priceLevels.flatMap((l) => l === 'PRICE_LEVEL_EXPENSIVE' ? GOOGLE_EXPENSIVE_LEVELS : [l]) } : {}),
@@ -110,15 +110,14 @@ function filterByRadius(places, center, maxRadius, genre) {
 }
 
 async function fetchGoogle({ query, priceLevels, center, radius, genre }) {
-  const biasRadius = Math.max(radius * 2, 2000)
-  const places = await callGoogleAPI({ query, priceLevels, center, biasRadius, genre })
+  const places = await callGoogleAPI({ query, priceLevels, center, radius, genre })
   const filtered = filterByRadius(places, center, radius, genre)
   if (filtered.length >= 3) return filtered
 
   const offsetDist = radius * 0.5
   const offsetPlaces = (await Promise.all(
     [0, 90, 180, 270].map((bearing) =>
-      callGoogleAPI({ query, priceLevels, center: offsetCenter(center, offsetDist, bearing), biasRadius, genre })
+      callGoogleAPI({ query, priceLevels, center: offsetCenter(center, offsetDist, bearing), radius, genre })
     )
   )).flat()
 
