@@ -264,3 +264,8 @@
 .search-btn:hover {
   opacity: 0.85;
 }
+
+.search-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}

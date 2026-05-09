@@ -310,8 +310,8 @@ function switchToCurrentLocation() {
             )}
           </section>
 
-          <button className="search-btn sidebar-search-btn" onClick={handleResearch}>
-            再検索
+          <button className="search-btn sidebar-search-btn" onClick={handleResearch} disabled={loading}>
+            {loading ? '検索中...' : '再検索'}
           </button>
 
         </aside>

@@ -226,7 +226,7 @@ function switchToCurrentLocation() {
           )}
         </section>
 
-        <button className="search-btn" onClick={handleSearch}>
+        <button className="search-btn" onClick={handleSearch} disabled={geoLoading}>
           探す
         </button>
       </main>
