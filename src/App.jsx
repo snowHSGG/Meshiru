@@ -18,7 +18,6 @@ function TopPage() {
         <h1 className="hero-title">
           <BrandLogo size="hero" />
         </h1>
-        <p className="hero-sub">迷わない。あなたのためのベスト３。</p>
         <p className="hero-desc">エリアとジャンルを選ぶだけで、評価の高い3店をすぐ提案。</p>
         <button className="hero-btn" onClick={() => navigate('/search')}>お店を探す</button>
       </main>
