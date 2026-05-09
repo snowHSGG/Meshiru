@@ -81,7 +81,7 @@ async function callGoogleAPI({ query, priceLevels, center, radius, genre }) {
     languageCode: 'ja',
     maxResultCount: 20,
     ...(includedType ? { includedType } : {}),
-    locationRestriction: {
+    locationBias: {
       circle: {
         center: { latitude: center.lat, longitude: center.lng },
         radius,
