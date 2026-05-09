@@ -45,6 +45,12 @@
   letter-spacing: 0.05em;
 }
 
+.hero-desc {
+  font-size: 0.85rem;
+  color: #444;
+  letter-spacing: 0.03em;
+}
+
 .hero-btn {
   margin-top: 0.5rem;
   padding: 0.8rem 2.5rem;
