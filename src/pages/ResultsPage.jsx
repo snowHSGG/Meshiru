@@ -337,7 +337,12 @@ function switchToCurrentLocation() {
           {loading && <div className="search-toast">検索中...</div>}
           {error && <p className="results-status">{error}</p>}
           {!loading && !error && results.length === 0 && (
-            <p className="results-status">条件に合うお店が見つかりませんでした。</p>
+            <div className="results-status">
+              <p>条件に合うお店が見つかりませんでした。</p>
+              <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#444' }}>
+                検索範囲を広げる・予算条件を外す・ジャンルを変えてみてください。
+              </p>
+            </div>
           )}
           <div className="cards">
             {results.map((place, i) => {
