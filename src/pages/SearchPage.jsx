@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { GENRES, PREFERENCES, SCENES, MEAL_TIMES, HOURS, PRICE_LEVELS, RADIUS_OPTIONS, todayStr, currentHourStr } from '../constants/search'
+import { GENRES, SCENES, MEAL_TIMES, HOURS, PRICE_LEVELS, RADIUS_OPTIONS, todayStr, currentHourStr } from '../constants/search'
 import { geocodeArea } from '../api/places'
 import AreaAutocomplete from '../components/AreaAutocomplete'
 import '../styles/SearchPage.css'
@@ -8,7 +8,6 @@ import '../styles/SearchPage.css'
 export default function SearchPage() {
   const navigate = useNavigate()
   const [genre, setGenre] = useState('')
-  const [preferences, setPreferences] = useState([])
   const [scene, setScene] = useState('')
   const [priceLevels, setPriceLevels] = useState([])
   const [partySize, setPartySize] = useState('')
@@ -36,13 +35,7 @@ export default function SearchPage() {
     )
   }, [])
 
-  function togglePreference(p) {
-    setPreferences((prev) =>
-      prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]
-    )
-  }
-
-  function switchToCurrentLocation() {
+function switchToCurrentLocation() {
     setLocMode('current')
     setGeoError('')
     setGeoLoading(true)
@@ -69,7 +62,7 @@ export default function SearchPage() {
       setGeoError('')
     }
     navigate('/results', {
-      state: { genre, preferences, scene, priceLevels, partySize, mealTime, visitDate, visitTime, locMode, area: resolvedArea, areaText, excludes, radius },
+      state: { genre, scene, priceLevels, partySize, mealTime, visitDate, visitTime, locMode, area: resolvedArea, areaText, excludes, radius },
     })
   }
 
@@ -180,19 +173,6 @@ export default function SearchPage() {
                 className={`chip ${genre === g ? 'active' : ''}`}
                 onClick={() => setGenre(genre === g ? '' : g)}
               >{g}</button>
-            ))}
-          </div>
-        </section>
-
-        <section className="filter-section">
-          <h2 className="filter-label">こだわり <span className="filter-note">複数選択可</span></h2>
-          <div className="chips">
-            {PREFERENCES.map((p) => (
-              <button
-                key={p}
-                className={`chip ${preferences.includes(p) ? 'active' : ''}`}
-                onClick={() => togglePreference(p)}
-              >{p}</button>
             ))}
           </div>
         </section>

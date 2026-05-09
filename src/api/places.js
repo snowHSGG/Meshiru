@@ -3,6 +3,16 @@ import { searchHotpepper } from './hotpepper'
 const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY
 
 
+const GENRE_TO_TYPE = {
+  '居酒屋': 'izakaya_restaurant',
+  'ラーメン': 'ramen_restaurant',
+  '寿司': 'sushi_restaurant',
+  '中華': 'chinese_restaurant',
+  'イタリアン': 'italian_restaurant',
+  'フレンチ': 'french_restaurant',
+  '焼肉': 'barbecue_restaurant',
+}
+
 const LEVEL_TO_HP_CODES = {
   PRICE_LEVEL_INEXPENSIVE: ['B001', 'B002'],
   PRICE_LEVEL_MODERATE:    ['B003', 'B004', 'B005'],
@@ -11,13 +21,13 @@ const LEVEL_TO_HP_CODES = {
 
 const GOOGLE_EXPENSIVE_LEVELS = ['PRICE_LEVEL_EXPENSIVE', 'PRICE_LEVEL_VERY_EXPENSIVE']
 
-export async function searchRestaurants({ genre, preferences, scene, priceLevels, partySize, mealTime, visitDate, visitTime, locMode, area, excludes, radius }) {
-  const query = buildQuery({ genre, preferences, scene, mealTime })
+export async function searchRestaurants({ genre, scene, priceLevels, partySize, mealTime, visitDate, visitTime, locMode, area, excludes, radius }) {
+  const query = buildQuery({ genre, scene, mealTime })
   const center = await resolveCenter({ locMode, area })
   const searchRadius = radius ?? 1000
 
   const [googleResults, hotpepperResults] = await Promise.all([
-    fetchGoogle({ query, priceLevels, center, radius: searchRadius }),
+    fetchGoogle({ query, priceLevels, center, radius: searchRadius, genre }),
     searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, mealTime, radius: searchRadius }).catch(() => []),
   ])
 
@@ -63,12 +73,13 @@ const FIELD_MASK = [
   'places.regularOpeningHours',
 ].join(',')
 
-async function callGoogleAPI({ query, priceLevels, center, biasRadius }) {
+async function callGoogleAPI({ query, priceLevels, center, biasRadius, genre }) {
+  const includedType = GENRE_TO_TYPE[genre] ?? (genre ? null : 'restaurant')
   const body = {
     textQuery: `${query || '飲食店'}`,
     languageCode: 'ja',
     maxResultCount: 20,
-    includedType: 'restaurant',
+    ...(includedType ? { includedType } : {}),
     locationBias: {
       circle: {
         center: { latitude: center.lat, longitude: center.lng },
@@ -97,16 +108,16 @@ function filterByRadius(places, center, maxRadius) {
   })
 }
 
-async function fetchGoogle({ query, priceLevels, center, radius }) {
+async function fetchGoogle({ query, priceLevels, center, radius, genre }) {
   const biasRadius = Math.max(radius * 2, 2000)
-  const places = await callGoogleAPI({ query, priceLevels, center, biasRadius })
+  const places = await callGoogleAPI({ query, priceLevels, center, biasRadius, genre })
   const filtered = filterByRadius(places, center, radius)
   if (filtered.length >= 3) return filtered
 
   const offsetDist = radius * 0.5
   const offsetPlaces = (await Promise.all(
     [0, 90, 180, 270].map((bearing) =>
-      callGoogleAPI({ query, priceLevels, center: offsetCenter(center, offsetDist, bearing), biasRadius })
+      callGoogleAPI({ query, priceLevels, center: offsetCenter(center, offsetDist, bearing), biasRadius, genre })
     )
   )).flat()
 
@@ -270,13 +281,11 @@ export function getPhotoUrl(photoName) {
   return `https://places.googleapis.com/v1/${photoName}/media?maxHeightPx=400&maxWidthPx=800&key=${API_KEY}`
 }
 
-function buildQuery({ genre, preferences, scene, mealTime }) {
+function buildQuery({ genre, scene, mealTime }) {
   const parts = []
   if (genre) parts.push(genre)
   if (mealTime) parts.push(mealTime)
   if (scene) parts.push(scene)
-  if (preferences?.includes('コスパ重視')) parts.push('コスパ')
-  if (preferences?.includes('個室あり')) parts.push('個室')
 
   return parts.join(' ')
 }

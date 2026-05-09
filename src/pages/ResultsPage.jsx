@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { APIProvider, Map, AdvancedMarker, Pin, useMap } from '@vis.gl/react-google-maps'
 import { searchRestaurants, getPhotoUrl, geocodeArea } from '../api/places'
 import AreaAutocomplete from '../components/AreaAutocomplete'
-import { GENRES, PREFERENCES, SCENES, MEAL_TIMES, HOURS, PRICE_LEVELS, RADIUS_OPTIONS, todayStr, currentHourStr } from '../constants/search'
+import { GENRES, SCENES, MEAL_TIMES, HOURS, PRICE_LEVELS, RADIUS_OPTIONS, todayStr, currentHourStr } from '../constants/search'
 import '../styles/ResultsPage.css'
 import '../styles/SearchPage.css'
 
@@ -48,7 +48,6 @@ export default function ResultsPage() {
   const { state } = useLocation()
 
   const [genre, setGenre] = useState(state?.genre ?? '')
-  const [preferences, setPreferences] = useState(state?.preferences ?? [])
   const [scene, setScene] = useState(state?.scene ?? '')
   const [priceLevels, setPriceLevels] = useState(state?.priceLevels ?? [])
   const [partySize, setPartySize] = useState(state?.partySize ?? '')
@@ -86,7 +85,7 @@ export default function ResultsPage() {
   }
 
   useEffect(() => {
-    runSearch({ genre, preferences, scene, priceLevels, partySize, mealTime, visitDate, visitTime, locMode, area, excludes, radius })
+    runSearch({ genre, scene, priceLevels, partySize, mealTime, visitDate, visitTime, locMode, area, excludes, radius })
   }, [])
 
   async function handleResearch() {
@@ -102,16 +101,10 @@ export default function ResultsPage() {
       setArea(resolvedArea)
       setGeoError('')
     }
-    runSearch({ genre, preferences, scene, priceLevels, partySize, mealTime, visitDate, visitTime, locMode, area: resolvedArea, excludes, radius })
+    runSearch({ genre, scene, priceLevels, partySize, mealTime, visitDate, visitTime, locMode, area: resolvedArea, excludes, radius })
   }
 
-  function togglePreference(p) {
-    setPreferences((prev) =>
-      prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]
-    )
-  }
-
-  function switchToCurrentLocation() {
+function switchToCurrentLocation() {
     setLocMode('current')
     setArea(null)
     setGeoError('')
@@ -264,19 +257,6 @@ export default function ResultsPage() {
                   className={`chip ${genre === g ? 'active' : ''}`}
                   onClick={() => setGenre(genre === g ? '' : g)}
                 >{g}</button>
-              ))}
-            </div>
-          </section>
-
-          <section className="filter-section">
-            <h2 className="filter-label">こだわり <span className="filter-note">複数可</span></h2>
-            <div className="chips">
-              {PREFERENCES.map((p) => (
-                <button
-                  key={p}
-                  className={`chip ${preferences.includes(p) ? 'active' : ''}`}
-                  onClick={() => togglePreference(p)}
-                >{p}</button>
               ))}
             </div>
           </section>
