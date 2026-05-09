@@ -11,6 +11,7 @@ const GENRE_TO_TYPE = {
   'イタリアン': 'italian_restaurant',
   'フレンチ': 'french_restaurant',
   '焼肉': 'barbecue_restaurant',
+  'カフェ': 'cafe',
 }
 
 const LEVEL_TO_HP_CODES = {
@@ -97,9 +98,9 @@ async function callGoogleAPI({ query, priceLevels, center, biasRadius, genre }) 
   return data.places ?? []
 }
 
-function filterByRadius(places, center, maxRadius) {
+function filterByRadius(places, center, maxRadius, genre) {
   return places.filter((p) => {
-    if (p.servesDinner === false && p.servesLunch === false) return false
+    if (genre !== 'カフェ' && p.servesDinner === false && p.servesLunch === false) return false
     if (p.location) {
       const dist = haversineDistance(center.lat, center.lng, p.location.latitude, p.location.longitude)
       if (dist > maxRadius) return false
@@ -111,7 +112,7 @@ function filterByRadius(places, center, maxRadius) {
 async function fetchGoogle({ query, priceLevels, center, radius, genre }) {
   const biasRadius = Math.max(radius * 2, 2000)
   const places = await callGoogleAPI({ query, priceLevels, center, biasRadius, genre })
-  const filtered = filterByRadius(places, center, radius)
+  const filtered = filterByRadius(places, center, radius, genre)
   if (filtered.length >= 3) return filtered
 
   const offsetDist = radius * 0.5
@@ -128,7 +129,7 @@ async function fetchGoogle({ query, priceLevels, center, radius, genre }) {
     return true
   })
 
-  return filterByRadius([...places, ...newPlaces], center, radius)
+  return filterByRadius([...places, ...newPlaces], center, radius, genre)
 }
 
 function isOpenAt(periods, dateStr, timeStr) {
