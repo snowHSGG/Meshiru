@@ -1,11 +1,12 @@
 import { useNavigate } from 'react-router-dom'
+import BrandLogo from '../components/BrandLogo'
 
 export default function NotFoundPage() {
   const navigate = useNavigate()
   return (
     <div className="page">
       <header className="header">
-        <span className="logo" onClick={() => navigate('/')}>meshishirube</span>
+        <BrandLogo onClick={() => navigate('/')} />
       </header>
       <main className="hero">
         <h1 className="hero-title" style={{ fontSize: '4rem' }}>404</h1>

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { APIProvider, Map, AdvancedMarker, Pin, useMap } from '@vis.gl/react-google-maps'
 import { searchRestaurants, getPhotoUrl, geocodeArea } from '../api/places'
 import AreaAutocomplete from '../components/AreaAutocomplete'
+import BrandLogo from '../components/BrandLogo'
 import { GENRES, SCENES, HOURS, PRICE_LEVELS, RADIUS_OPTIONS, todayStr, currentHourStr } from '../constants/search'
 import '../styles/ResultsPage.css'
 import '../styles/SearchPage.css'
@@ -151,7 +152,7 @@ function switchToCurrentLocation() {
   return (
     <div className="page">
       <header className="header">
-        <span className="logo" onClick={() => navigate('/')}>meshishirube</span>
+        <BrandLogo onClick={() => navigate('/')} />
       </header>
 
       <div className="results-layout">

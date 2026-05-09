@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { GENRES, SCENES, HOURS, PRICE_LEVELS, RADIUS_OPTIONS, todayStr, currentHourStr } from '../constants/search'
 import { geocodeArea } from '../api/places'
 import AreaAutocomplete from '../components/AreaAutocomplete'
+import BrandLogo from '../components/BrandLogo'
 import '../styles/SearchPage.css'
 
 export default function SearchPage() {
@@ -67,7 +68,7 @@ function switchToCurrentLocation() {
   return (
     <div className="page">
       <header className="header">
-        <span className="logo" onClick={() => navigate('/')}>meshishirube</span>
+        <BrandLogo onClick={() => navigate('/')} />
       </header>
 
       <main className="search-main">

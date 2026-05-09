@@ -1,11 +1,12 @@
 import { useNavigate } from 'react-router-dom'
+import BrandLogo from '../components/BrandLogo'
 
 export default function PrivacyPage() {
   const navigate = useNavigate()
   return (
     <div className="page">
       <header className="header">
-        <span className="logo" onClick={() => navigate('/')}>meshishirube</span>
+        <BrandLogo onClick={() => navigate('/')} />
       </header>
       <main style={{ maxWidth: '720px', margin: '0 auto', padding: '3rem 2rem 6rem', color: '#ccc', lineHeight: 1.9 }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f0f0f0', marginBottom: '2rem' }}>プライバシーポリシー</h1>

@@ -8,17 +8,9 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  padding: 1.5rem 2.5rem;
+  padding: 1.25rem 2.5rem;
   border-bottom: 1px solid #1f1f1f;
   background: #0f0f0f;
-}
-
-.logo {
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: #f0f0f0;
-  cursor: pointer;
 }
 
 .hero {
@@ -33,10 +25,7 @@
 }
 
 .hero-title {
-  font-size: clamp(3rem, 10vw, 7rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: #f0f0f0;
+  line-height: 0.9;
 }
 
 .hero-sub {
