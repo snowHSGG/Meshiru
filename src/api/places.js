@@ -99,7 +99,7 @@ async function callGoogleAPI({ query, priceLevels, center, radius, genre, typeOv
 
 function filterByRadius(places, center, maxRadius, genre) {
   return places.filter((p) => {
-    if (genre !== 'カフェ' && p.servesDinner === false && p.servesLunch === false) return false
+    if (!['カフェ', 'アフタヌーンティー'].includes(genre) && p.servesDinner === false && p.servesLunch === false) return false
     if (p.location) {
       const dist = haversineDistance(center.lat, center.lng, p.location.latitude, p.location.longitude)
       if (dist > maxRadius) return false
