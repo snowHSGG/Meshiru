@@ -5,7 +5,7 @@ export default function PrivacyPage() {
   return (
     <div className="page">
       <header className="header">
-        <span className="logo" onClick={() => navigate('/')}>Meshiru</span>
+        <span className="logo" onClick={() => navigate('/')}>meshishirube</span>
       </header>
       <main style={{ maxWidth: '720px', margin: '0 auto', padding: '3rem 2rem 6rem', color: '#ccc', lineHeight: 1.9 }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f0f0f0', marginBottom: '2rem' }}>プライバシーポリシー</h1>
@@ -14,7 +14,7 @@ export default function PrivacyPage() {
 
         <section style={{ marginBottom: '2rem' }}>
           <h2 style={h2}>1. 基本方針</h2>
-          <p>Meshiru（以下「本サービス」）は、ユーザーのプライバシーを尊重し、個人情報の適切な取り扱いに努めます。</p>
+          <p>meshishirube（以下「本サービス」）は、ユーザーのプライバシーを尊重し、個人情報の適切な取り扱いに努めます。</p>
         </section>
 
         <section style={{ marginBottom: '2rem' }}>

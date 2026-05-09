@@ -11,10 +11,10 @@ function TopPage() {
   return (
     <div className="page">
       <header className="header">
-        <span className="logo">Meshiru</span>
+        <span className="logo">meshishirube</span>
       </header>
       <main className="hero">
-        <h1 className="hero-title">Meshiru</h1>
+        <h1 className="hero-title">meshishirube</h1>
         <p className="hero-sub">迷わない。あなたのためのベスト３。</p>
         <p className="hero-desc">エリアとジャンルを選ぶだけで、評価の高い3店をすぐ提案。</p>
         <button className="hero-btn" onClick={() => navigate('/search')}>お店を探す</button>

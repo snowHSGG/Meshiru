@@ -151,7 +151,7 @@ function switchToCurrentLocation() {
   return (
     <div className="page">
       <header className="header">
-        <span className="logo" onClick={() => navigate('/')}>Meshiru</span>
+        <span className="logo" onClick={() => navigate('/')}>meshishirube</span>
       </header>
 
       <div className="results-layout">
@@ -432,7 +432,7 @@ function switchToCurrentLocation() {
               key={mapKey}
               defaultCenter={mapCenter}
               defaultZoom={14}
-              mapId="meshiru-map"
+              mapId="meshishirube-map"
               style={{ width: '100%', height: '100%' }}
             >
               <MapBoundsFitter searchCenter={searchCenter} radius={radius} />

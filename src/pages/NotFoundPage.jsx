@@ -5,7 +5,7 @@ export default function NotFoundPage() {
   return (
     <div className="page">
       <header className="header">
-        <span className="logo" onClick={() => navigate('/')}>Meshiru</span>
+        <span className="logo" onClick={() => navigate('/')}>meshishirube</span>
       </header>
       <main className="hero">
         <h1 className="hero-title" style={{ fontSize: '4rem' }}>404</h1>

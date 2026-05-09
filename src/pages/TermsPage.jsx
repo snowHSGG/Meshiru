@@ -5,7 +5,7 @@ export default function TermsPage() {
   return (
     <div className="page">
       <header className="header">
-        <span className="logo" onClick={() => navigate('/')}>Meshiru</span>
+        <span className="logo" onClick={() => navigate('/')}>meshishirube</span>
       </header>
       <main style={{ maxWidth: '720px', margin: '0 auto', padding: '3rem 2rem 6rem', color: '#ccc', lineHeight: 1.9 }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f0f0f0', marginBottom: '2rem' }}>利用規約</h1>
@@ -14,7 +14,7 @@ export default function TermsPage() {
 
         <section style={{ marginBottom: '2rem' }}>
           <h2 style={h2}>1. 適用</h2>
-          <p>本規約は、Meshiru（以下「本サービス」）の利用に関する条件を定めるものです。本サービスをご利用いただいた時点で、本規約に同意したものとみなします。</p>
+          <p>本規約は、meshishirube（以下「本サービス」）の利用に関する条件を定めるものです。本サービスをご利用いただいた時点で、本規約に同意したものとみなします。</p>
         </section>
 
         <section style={{ marginBottom: '2rem' }}>

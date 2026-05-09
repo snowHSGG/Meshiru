@@ -67,7 +67,7 @@ function switchToCurrentLocation() {
   return (
     <div className="page">
       <header className="header">
-        <span className="logo" onClick={() => navigate('/')}>Meshiru</span>
+        <span className="logo" onClick={() => navigate('/')}>meshishirube</span>
       </header>
 
       <main className="search-main">
