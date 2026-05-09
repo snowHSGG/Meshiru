@@ -3,6 +3,7 @@ import SearchPage from './pages/SearchPage'
 import ResultsPage from './pages/ResultsPage'
 import PrivacyPage from './pages/PrivacyPage'
 import TermsPage from './pages/TermsPage'
+import NotFoundPage from './pages/NotFoundPage'
 import './App.css'
 
 function TopPage() {
@@ -34,6 +35,7 @@ export default function App() {
         <Route path="/results" element={<ResultsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   )
