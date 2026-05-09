@@ -1,5 +1,5 @@
 export const GENRES = ['焼き鳥', '焼肉', '寿司', '居酒屋', 'ラーメン', '中華', 'イタリアン', 'フレンチ', 'カレー', 'カフェ']
-export const SCENES = ['デート', '女子会', '接待', '誕生日', '記念日', '23時以降']
+export const SCENES = ['デート', '女子会', '接待', '記念日', '23時以降']
 export const HOURS = Array.from({ length: 16 }, (_, i) => `${i + 9}:00`)
 
 

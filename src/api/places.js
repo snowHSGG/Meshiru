@@ -22,11 +22,12 @@ const GOOGLE_EXPENSIVE_LEVELS = ['PRICE_LEVEL_EXPENSIVE', 'PRICE_LEVEL_VERY_EXPE
 
 export async function searchRestaurants({ genre, scene, priceLevels, visitDate, visitTime, locMode, area, excludes, radius }) {
   const query = buildQuery({ genre, scene })
+  const queryAlt = scene === '記念日' ? buildQuery({ genre, scene: '誕生日' }) : null
   const center = await resolveCenter({ locMode, area })
   const searchRadius = radius ?? 1000
 
   const [googleResults, hotpepperResults] = await Promise.all([
-    fetchGoogle({ query, priceLevels, center, radius: searchRadius, genre }),
+    fetchGoogle({ query, queryAlt, priceLevels, center, radius: searchRadius, genre }),
     searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, radius: searchRadius }).catch(() => []),
   ])
 
@@ -107,9 +108,11 @@ function filterByRadius(places, center, maxRadius, genre) {
   })
 }
 
-async function fetchGoogle({ query, priceLevels, center, radius, genre }) {
+async function fetchGoogle({ query, queryAlt, priceLevels, center, radius, genre }) {
   const calls = genre === 'カフェ'
     ? [{ typeOverride: 'cafe', textQueryOverride: 'カフェ' }, { typeOverride: 'coffee_shop', textQueryOverride: 'コーヒー' }]
+    : queryAlt
+    ? [{}, { textQueryOverride: queryAlt }]
     : [{}]
 
   const initialResults = (await Promise.all(
