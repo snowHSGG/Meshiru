@@ -51,7 +51,7 @@ export default function ResultsPage() {
   const [scene, setScene] = useState(state?.scene ?? '')
   const [priceLevels, setPriceLevels] = useState(state?.priceLevels ?? [])
   const [visitDate, setVisitDate] = useState(state?.visitDate ?? todayStr())
-  const [visitTime, setVisitTime] = useState(state?.visitTime ?? '')
+  const [visitTime, setVisitTime] = useState(state?.visitTime ?? currentHourStr())
   const [locMode, setLocMode] = useState(state?.locMode ?? 'area')
   const [area, setArea] = useState(state?.area ?? null)
   const [areaText, setAreaText] = useState(state?.areaText ?? '')

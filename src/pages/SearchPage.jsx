@@ -11,7 +11,7 @@ export default function SearchPage() {
   const [scene, setScene] = useState('')
   const [priceLevels, setPriceLevels] = useState([])
   const [visitDate, setVisitDate] = useState(todayStr())
-  const [visitTime, setVisitTime] = useState('')
+  const [visitTime, setVisitTime] = useState(currentHourStr())
   const [locMode, setLocMode] = useState('current')
   const [areaText, setAreaText] = useState('')
   const [area, setArea] = useState(null)
