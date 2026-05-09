@@ -340,7 +340,7 @@ function switchToCurrentLocation() {
             <div className="results-status">
               <p>条件に合うお店が見つかりませんでした。</p>
               <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#444' }}>
-                検索範囲を広げる・予算条件を外す・ジャンルを変えてみてください。
+                検索条件を変更してみてください。
               </p>
             </div>
           )}
