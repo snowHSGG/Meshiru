@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { GENRES, SCENES, MEAL_TIMES, HOURS, PRICE_LEVELS, RADIUS_OPTIONS, todayStr, currentHourStr } from '../constants/search'
+import { GENRES, SCENES, HOURS, PRICE_LEVELS, RADIUS_OPTIONS, todayStr, currentHourStr } from '../constants/search'
 import { geocodeArea } from '../api/places'
 import AreaAutocomplete from '../components/AreaAutocomplete'
 import '../styles/SearchPage.css'
@@ -11,7 +11,6 @@ export default function SearchPage() {
   const [scene, setScene] = useState('')
   const [priceLevels, setPriceLevels] = useState([])
   const [partySize, setPartySize] = useState('')
-  const [mealTime, setMealTime] = useState('')
   const [visitDate, setVisitDate] = useState(todayStr())
   const [visitTime, setVisitTime] = useState('')
   const [locMode, setLocMode] = useState('current')
@@ -62,7 +61,7 @@ function switchToCurrentLocation() {
       setGeoError('')
     }
     navigate('/results', {
-      state: { genre, scene, priceLevels, partySize, mealTime, visitDate, visitTime, locMode, area: resolvedArea, areaText, excludes, radius },
+      state: { genre, scene, priceLevels, partySize, visitDate, visitTime, locMode, area: resolvedArea, areaText, excludes, radius },
     })
   }
 
@@ -141,19 +140,6 @@ function switchToCurrentLocation() {
                 ))}
               </select>
             </div>
-          </div>
-        </section>
-
-        <section className="filter-section">
-          <h2 className="filter-label">時間帯</h2>
-          <div className="chips">
-            {MEAL_TIMES.map((m) => (
-              <button
-                key={m}
-                className={`chip ${mealTime === m ? 'active' : ''}`}
-                onClick={() => setMealTime(mealTime === m ? '' : m)}
-              >{m}</button>
-            ))}
           </div>
         </section>
 

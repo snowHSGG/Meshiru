@@ -6,14 +6,12 @@ function toHotpepperRange(radius) {
   return '5'
 }
 
-export async function searchHotpepper({ lat, lng, keyword, mealTime, radius }) {
+export async function searchHotpepper({ lat, lng, keyword, radius }) {
   const params = new URLSearchParams({
     lat: lat ?? '35.6762',
     lng: lng ?? '139.6503',
     range: toHotpepperRange(radius ?? 1000),
     ...(keyword ? { keyword } : {}),
-    ...(mealTime === 'ランチ' ? { lunch: '1' } : {}),
-    ...(mealTime === 'ディナー' ? { dinner: '1' } : {}),
   })
 
   const res = await fetch(`/api/hotpepper?${params}`)

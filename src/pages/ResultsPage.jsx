@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { APIProvider, Map, AdvancedMarker, Pin, useMap } from '@vis.gl/react-google-maps'
 import { searchRestaurants, getPhotoUrl, geocodeArea } from '../api/places'
 import AreaAutocomplete from '../components/AreaAutocomplete'
-import { GENRES, SCENES, MEAL_TIMES, HOURS, PRICE_LEVELS, RADIUS_OPTIONS, todayStr, currentHourStr } from '../constants/search'
+import { GENRES, SCENES, HOURS, PRICE_LEVELS, RADIUS_OPTIONS, todayStr, currentHourStr } from '../constants/search'
 import '../styles/ResultsPage.css'
 import '../styles/SearchPage.css'
 
@@ -51,7 +51,6 @@ export default function ResultsPage() {
   const [scene, setScene] = useState(state?.scene ?? '')
   const [priceLevels, setPriceLevels] = useState(state?.priceLevels ?? [])
   const [partySize, setPartySize] = useState(state?.partySize ?? '')
-  const [mealTime, setMealTime] = useState(state?.mealTime ?? '')
   const [visitDate, setVisitDate] = useState(state?.visitDate ?? todayStr())
   const [visitTime, setVisitTime] = useState(state?.visitTime ?? '')
   const [locMode, setLocMode] = useState(state?.locMode ?? 'area')
@@ -85,7 +84,7 @@ export default function ResultsPage() {
   }
 
   useEffect(() => {
-    runSearch({ genre, scene, priceLevels, partySize, mealTime, visitDate, visitTime, locMode, area, excludes, radius })
+    runSearch({ genre, scene, priceLevels, partySize, visitDate, visitTime, locMode, area, excludes, radius })
   }, [])
 
   async function handleResearch() {
@@ -101,7 +100,7 @@ export default function ResultsPage() {
       setArea(resolvedArea)
       setGeoError('')
     }
-    runSearch({ genre, scene, priceLevels, partySize, mealTime, visitDate, visitTime, locMode, area: resolvedArea, excludes, radius })
+    runSearch({ genre, scene, priceLevels, partySize, visitDate, visitTime, locMode, area: resolvedArea, excludes, radius })
   }
 
 function switchToCurrentLocation() {
@@ -225,19 +224,6 @@ function switchToCurrentLocation() {
                   <option key={h} value={h}>{h}</option>
                 ))}
               </select>
-            </div>
-          </section>
-
-          <section className="filter-section">
-            <h2 className="filter-label">時間帯</h2>
-            <div className="chips">
-              {MEAL_TIMES.map((m) => (
-                <button
-                  key={m}
-                  className={`chip ${mealTime === m ? 'active' : ''}`}
-                  onClick={() => setMealTime(mealTime === m ? '' : m)}
-                >{m}</button>
-              ))}
             </div>
           </section>
 

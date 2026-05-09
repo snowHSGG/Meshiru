@@ -21,14 +21,14 @@ const LEVEL_TO_HP_CODES = {
 
 const GOOGLE_EXPENSIVE_LEVELS = ['PRICE_LEVEL_EXPENSIVE', 'PRICE_LEVEL_VERY_EXPENSIVE']
 
-export async function searchRestaurants({ genre, scene, priceLevels, partySize, mealTime, visitDate, visitTime, locMode, area, excludes, radius }) {
-  const query = buildQuery({ genre, scene, mealTime })
+export async function searchRestaurants({ genre, scene, priceLevels, partySize, visitDate, visitTime, locMode, area, excludes, radius }) {
+  const query = buildQuery({ genre, scene })
   const center = await resolveCenter({ locMode, area })
   const searchRadius = radius ?? 1000
 
   const [googleResults, hotpepperResults] = await Promise.all([
     fetchGoogle({ query, priceLevels, center, radius: searchRadius, genre }),
-    searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, mealTime, radius: searchRadius }).catch(() => []),
+    searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, radius: searchRadius }).catch(() => []),
   ])
 
   const places = mergeResults(googleResults, hotpepperResults, priceLevels, partySize, visitDate, visitTime, excludes)
@@ -281,10 +281,9 @@ export function getPhotoUrl(photoName) {
   return `https://places.googleapis.com/v1/${photoName}/media?maxHeightPx=400&maxWidthPx=800&key=${API_KEY}`
 }
 
-function buildQuery({ genre, scene, mealTime }) {
+function buildQuery({ genre, scene }) {
   const parts = []
   if (genre) parts.push(genre)
-  if (mealTime) parts.push(mealTime)
   if (scene) parts.push(scene)
 
   return parts.join(' ')
