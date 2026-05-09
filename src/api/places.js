@@ -11,7 +11,6 @@ const GENRE_TO_TYPE = {
   'イタリアン': 'italian_restaurant',
   'フレンチ': 'french_restaurant',
   '焼肉': 'barbecue_restaurant',
-  'カフェ': 'cafe',
 }
 
 const LEVEL_TO_HP_CODES = {
