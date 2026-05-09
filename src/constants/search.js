@@ -1,6 +1,6 @@
 export const GENRES = ['焼き鳥', '焼肉', '寿司', '居酒屋', 'ラーメン', '中華', 'イタリアン', 'フレンチ', 'カレー', 'カフェ']
 export const SCENES = ['デート', '女子会', '接待', '記念日', '23時以降']
-export const HOURS = Array.from({ length: 16 }, (_, i) => `${i + 9}:00`)
+export const HOURS = Array.from({ length: 19 }, (_, i) => `${i + 6}:00`)
 
 
 export const RADIUS_OPTIONS = [
@@ -40,5 +40,5 @@ export function todayStr() {
 
 export function currentHourStr() {
   const h = new Date().getHours()
-  return h >= 9 ? `${h}:00` : '9:00'
+  return h >= 6 ? `${h}:00` : '6:00'
 }
