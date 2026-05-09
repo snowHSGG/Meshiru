@@ -10,7 +10,7 @@ export default function PrivacyPage() {
       <main style={{ maxWidth: '720px', margin: '0 auto', padding: '3rem 2rem 6rem', color: '#ccc', lineHeight: 1.9 }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f0f0f0', marginBottom: '2rem' }}>プライバシーポリシー</h1>
 
-        <p style={{ color: '#666', fontSize: '0.85rem', marginBottom: '2.5rem' }}>最終更新日：2026年5月8日</p>
+        <p style={{ color: '#666', fontSize: '0.85rem', marginBottom: '2.5rem' }}>最終更新日：2026年5月9日</p>
 
         <section style={{ marginBottom: '2rem' }}>
           <h2 style={h2}>1. 基本方針</h2>
@@ -38,7 +38,8 @@ export default function PrivacyPage() {
 
         <section style={{ marginBottom: '2rem' }}>
           <h2 style={h2}>4. Cookieおよびアクセス解析</h2>
-          <p>本サービスは現在、Cookieを使用したトラッキングやアクセス解析ツールを導入していません。</p>
+          <p>本サービスはCookieを使用しません。</p>
+          <p style={{ marginTop: '0.75rem' }}>アクセス状況の把握を目的として、<strong style={{ color: '#f0f0f0' }}>Vercel Analytics</strong>（Vercel Inc.）を導入しています。Vercel Analyticsはクッキーレスで動作し、個人を特定できる情報は収集しません。ページビュー数および訪問者数の集計にのみ使用します。詳細はVercelの<a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" style={{ color: '#a78bfa' }}>プライバシーポリシー</a>をご参照ください。</p>
         </section>
 
         <section style={{ marginBottom: '2rem' }}>
