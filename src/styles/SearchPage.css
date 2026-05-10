@@ -20,15 +20,16 @@
 }
 
 .filter-label {
-  font-size: 0.8rem;
-  letter-spacing: 0.1em;
-  color: #888;
-  font-weight: 500;
+  font-size: 0.84rem;
+  letter-spacing: 0.08em;
+  color: #d8d2c7;
+  font-weight: 700;
 }
 
 .filter-note {
   font-size: 0.7rem;
-  color: #555;
+  color: #777;
+  font-weight: 500;
   margin-left: 0.5rem;
 }
 

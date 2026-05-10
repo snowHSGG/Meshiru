@@ -79,7 +79,7 @@ export default function ResultsPage() {
     window.scrollTo(0, 0)
     searchRestaurants(filters)
       .then(({ places, center }) => { setAllResults(places); setSearchCenter(center) })
-      .catch(() => setError('検索に失敗しました。'))
+      .catch((err) => setError(err.message || '検索に失敗しました。'))
       .finally(() => setLoading(false))
   }
 
