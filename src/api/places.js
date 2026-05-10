@@ -25,13 +25,19 @@ export async function searchRestaurants({ genre, scene, priceLevels, visitDate, 
   const queryAlt = scene === '記念日' ? buildQuery({ genre, scene: '誕生日' }) : null
   const center = await resolveCenter({ locMode, area })
   const searchRadius = radius ?? 500
+  const excludeKeywords = [...new Set((excludes ?? []).map((t) => t.trim()).filter(Boolean))]
 
-  const [googleResults, hotpepperResults] = await Promise.all([
+  const [googleResults, hotpepperResults, excludedHotpepperResults] = await Promise.all([
     fetchGoogle({ query, queryAlt, priceLevels, center, radius: searchRadius, genre }),
     searchHotpepper({ lat: center.lat, lng: center.lng, keyword: query, radius: searchRadius }).catch(() => []),
+    Promise.all(
+      excludeKeywords.map((keyword) =>
+        searchHotpepper({ lat: center.lat, lng: center.lng, keyword, radius: searchRadius }).catch(() => [])
+      )
+    ).then((results) => results.flat()),
   ])
 
-  const places = mergeResults(googleResults, hotpepperResults, priceLevels, visitDate, visitTime, excludes)
+  const places = mergeResults(googleResults, hotpepperResults, excludedHotpepperResults, priceLevels, visitDate, visitTime, excludes)
   return { places, center }
 }
 
@@ -208,7 +214,7 @@ function normalizeSearchText(value) {
     .replace(/[ァ-ン]/g, (char) => String.fromCharCode(char.charCodeAt(0) - 0x60))
 }
 
-function shouldExcludePlace(place, matched, excludeTerms) {
+function shouldExcludePlace(place, matched, excludedMatch, excludeTerms) {
   if (excludeTerms.length === 0) return false
 
   const searchableText = [
@@ -220,12 +226,16 @@ function shouldExcludePlace(place, matched, excludeTerms) {
     matched?.genre,
     matched?.catch,
     matched?.address,
+    excludedMatch?.name,
+    excludedMatch?.genre,
+    excludedMatch?.catch,
+    excludedMatch?.address,
   ].map(normalizeSearchText).join(' ')
 
   return excludeTerms.some((term) => searchableText.includes(term))
 }
 
-function mergeResults(googlePlaces, hotpepperShops, priceLevels, visitDate, visitTime, excludes) {
+function mergeResults(googlePlaces, hotpepperShops, excludedHotpepperShops, priceLevels, visitDate, visitTime, excludes) {
   const hasLevelFilter = priceLevels?.length > 0
   const allowedHpCodes = hasLevelFilter
     ? priceLevels.flatMap((l) => LEVEL_TO_HP_CODES[l] ?? [])
@@ -240,8 +250,9 @@ function mergeResults(googlePlaces, hotpepperShops, priceLevels, visitDate, visi
     if (!isOpenAt(place.regularOpeningHours?.periods, visitDate, visitTime)) return null
 
     const matched = findMatch(hotpepperShops, name, lat, lng)
+    const excludedMatch = findMatch(excludedHotpepperShops, name, lat, lng)
 
-    if (shouldExcludePlace(place, matched, excludeTerms)) return null
+    if (shouldExcludePlace(place, matched, excludedMatch, excludeTerms)) return null
 
     if (hasLevelFilter) {
       if (matched?.budgetCode) {
