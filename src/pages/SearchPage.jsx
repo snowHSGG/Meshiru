@@ -20,7 +20,7 @@ export default function SearchPage() {
   const [geoLoading, setGeoLoading] = useState(false)
   const [excludes, setExcludes] = useState([])
   const [excludeInput, setExcludeInput] = useState('')
-  const [radius, setRadius] = useState(1000)
+  const [radius, setRadius] = useState(500)
 
   useEffect(() => {
     setGeoLoading(true)

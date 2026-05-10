@@ -24,7 +24,7 @@ export async function searchRestaurants({ genre, scene, priceLevels, visitDate, 
   const query = buildQuery({ genre, scene })
   const queryAlt = scene === '記念日' ? buildQuery({ genre, scene: '誕生日' }) : null
   const center = await resolveCenter({ locMode, area })
-  const searchRadius = radius ?? 1000
+  const searchRadius = radius ?? 500
 
   const [googleResults, hotpepperResults] = await Promise.all([
     fetchGoogle({ query, queryAlt, priceLevels, center, radius: searchRadius, genre }),

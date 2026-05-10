@@ -60,7 +60,7 @@ export default function ResultsPage() {
   const [geoLoading, setGeoLoading] = useState(false)
   const [excludes, setExcludes] = useState(state?.excludes ?? [])
   const [excludeInput, setExcludeInput] = useState('')
-  const [radius, setRadius] = useState(state?.radius ?? 1000)
+  const [radius, setRadius] = useState(state?.radius ?? 500)
 
   const [allResults, setAllResults] = useState([])
   const [excludedIds, setExcludedIds] = useState([])

@@ -10,7 +10,7 @@ export async function searchHotpepper({ lat, lng, keyword, radius }) {
   const params = new URLSearchParams({
     lat: lat ?? '35.6762',
     lng: lng ?? '139.6503',
-    range: toHotpepperRange(radius ?? 1000),
+    range: toHotpepperRange(radius ?? 500),
     ...(keyword ? { keyword } : {}),
   })
 
