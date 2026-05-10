@@ -200,12 +200,37 @@ function findMatch(shops, name, lat, lng) {
   })
 }
 
+function normalizeSearchText(value) {
+  return (value ?? '')
+    .normalize('NFKC')
+    .replace(/[\s　・＆&()（）【】「」『』]/g, '')
+    .toLowerCase()
+    .replace(/[ァ-ン]/g, (char) => String.fromCharCode(char.charCodeAt(0) - 0x60))
+}
+
+function shouldExcludePlace(place, matched, excludeTerms) {
+  if (excludeTerms.length === 0) return false
+
+  const searchableText = [
+    place.displayName?.text,
+    place.primaryTypeDisplayName?.text,
+    place.editorialSummary?.text,
+    place.formattedAddress,
+    matched?.name,
+    matched?.genre,
+    matched?.catch,
+    matched?.address,
+  ].map(normalizeSearchText).join(' ')
+
+  return excludeTerms.some((term) => searchableText.includes(term))
+}
+
 function mergeResults(googlePlaces, hotpepperShops, priceLevels, visitDate, visitTime, excludes) {
   const hasLevelFilter = priceLevels?.length > 0
   const allowedHpCodes = hasLevelFilter
     ? priceLevels.flatMap((l) => LEVEL_TO_HP_CODES[l] ?? [])
     : null
-  const excludeTerms = (excludes ?? []).map((t) => t.toLowerCase())
+  const excludeTerms = (excludes ?? []).map(normalizeSearchText).filter(Boolean)
 
   const merged = googlePlaces.map((place) => {
     const name = place.displayName?.text ?? ''
@@ -214,13 +239,9 @@ function mergeResults(googlePlaces, hotpepperShops, priceLevels, visitDate, visi
 
     if (!isOpenAt(place.regularOpeningHours?.periods, visitDate, visitTime)) return null
 
-    if (excludeTerms.length > 0) {
-      const typeText = (place.primaryTypeDisplayName?.text ?? '').toLowerCase()
-      const nameText = name.toLowerCase()
-      if (excludeTerms.some((t) => typeText.includes(t) || nameText.includes(t))) return null
-    }
-
     const matched = findMatch(hotpepperShops, name, lat, lng)
+
+    if (shouldExcludePlace(place, matched, excludeTerms)) return null
 
     if (hasLevelFilter) {
       if (matched?.budgetCode) {
