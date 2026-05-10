@@ -17,16 +17,9 @@ export default function BrandLogo({ size = 'header', onClick }) {
     : {}
 
   return (
-    <span className={className} aria-label="meshishirube" {...interactiveProps}>
-      <span className="brand-mark" aria-hidden="true">
-        <span className="brand-mark-dot" />
-        <span className="brand-mark-dot" />
-        <span className="brand-mark-dot" />
-      </span>
-      <span className="brand-word">
-        <span className="brand-word-meshi">meshi</span>
-        <span className="brand-word-shirube">shirube</span>
-      </span>
+    <span className={className} aria-label="めししるべ" {...interactiveProps}>
+      <img className="brand-mark" src="/meshishirube-logo.png" alt="" aria-hidden="true" />
+      <span className="brand-word" aria-hidden="true">めししるべ</span>
     </span>
   )
 }

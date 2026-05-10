@@ -10,7 +10,7 @@
   z-index: 100;
   padding: 1.25rem 2.5rem;
   border-bottom: 1px solid #1f1f1f;
-  background: #0f0f0f;
+  background: #050403;
 }
 
 .hero {
@@ -20,8 +20,8 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 4rem 2rem;
-  gap: 1.5rem;
+  padding: 3.5rem 2rem 4rem;
+  gap: 1.25rem;
 }
 
 .hero-title {
@@ -38,24 +38,27 @@
   font-size: 0.85rem;
   color: #aaa;
   letter-spacing: 0.03em;
+  margin-top: 0.15rem;
 }
 
 .hero-btn {
-  margin-top: 0.5rem;
-  padding: 0.8rem 2.5rem;
-  background: #f0f0f0;
-  color: #0f0f0f;
-  border: none;
+  margin-top: 0.35rem;
+  padding: 0.82rem 2.5rem;
+  background: #f7f0e3;
+  color: #050403;
+  border: 1px solid #d6a12f;
   font-size: 0.95rem;
   font-family: inherit;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
 }
 
 .hero-btn:hover {
-  opacity: 0.85;
+  background: #fff7e8;
+  border-color: #e0ad3a;
+  transform: translateY(-1px);
 }
 
 .footer {

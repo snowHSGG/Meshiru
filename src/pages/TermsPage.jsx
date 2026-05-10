@@ -15,7 +15,7 @@ export default function TermsPage() {
 
         <section style={{ marginBottom: '2rem' }}>
           <h2 style={h2}>1. 適用</h2>
-          <p>本規約は、meshishirube（以下「本サービス」）の利用に関する条件を定めるものです。本サービスをご利用いただいた時点で、本規約に同意したものとみなします。</p>
+          <p>本規約は、めししるべ（以下「本サービス」）の利用に関する条件を定めるものです。本サービスをご利用いただいた時点で、本規約に同意したものとみなします。</p>
         </section>
 
         <section style={{ marginBottom: '2rem' }}>

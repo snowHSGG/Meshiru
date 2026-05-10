@@ -15,7 +15,7 @@ export default function PrivacyPage() {
 
         <section style={{ marginBottom: '2rem' }}>
           <h2 style={h2}>1. 基本方針</h2>
-          <p>meshishirube（以下「本サービス」）は、ユーザーのプライバシーを尊重し、個人情報の適切な取り扱いに努めます。</p>
+          <p>めししるべ（以下「本サービス」）は、ユーザーのプライバシーを尊重し、個人情報の適切な取り扱いに努めます。</p>
         </section>
 
         <section style={{ marginBottom: '2rem' }}>
