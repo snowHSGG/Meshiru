@@ -266,7 +266,7 @@ async function fetchGoogle({ query, queryAlt, priceLevels, center, radius, genre
   })
 
   const filtered = filterByRadius(places, center, radius, genre)
-  if (filtered.length >= 3) return filtered
+  if (filtered.length >= 10) return filtered
 
   const offsetDist = radius * 0.5
   const offsetPlaces = (await Promise.all(
