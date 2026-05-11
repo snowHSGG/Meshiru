@@ -7,6 +7,7 @@ export const RADIUS_OPTIONS = [
   { label: '500m', value: 500 },
   { label: '1km',  value: 1000 },
   { label: '2km',  value: 2000 },
+  { label: '5km',  value: 5000 },
 ]
 
 export const PRICE_LEVELS = [

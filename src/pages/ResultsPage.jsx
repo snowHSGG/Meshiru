@@ -52,7 +52,7 @@ export default function ResultsPage() {
   const [scene, setScene] = useState(state?.scene ?? '')
   const [priceLevels, setPriceLevels] = useState(state?.priceLevels ?? [])
   const [visitDate, setVisitDate] = useState(state?.visitDate ?? todayStr())
-  const [visitTime, setVisitTime] = useState(state?.visitTime ?? currentHourStr())
+  const [visitTime, setVisitTime] = useState(state?.visitTime ?? '')
   const [locMode, setLocMode] = useState(state?.locMode ?? 'area')
   const [area, setArea] = useState(state?.area ?? null)
   const [areaText, setAreaText] = useState(state?.areaText ?? '')
@@ -213,7 +213,14 @@ function switchToCurrentLocation() {
               />
             </div>
             <div className="datetime-field" style={{ marginTop: '0.5rem' }}>
-              <label className="datetime-label">時間</label>
+              <div className="datetime-label-row">
+                <label className="datetime-label">時間</label>
+                <button
+                  type="button"
+                  className="time-now-btn"
+                  onClick={() => setVisitTime(currentHourStr())}
+                >現在時刻</button>
+              </div>
               <select
                 className="datetime-input"
                 value={visitTime}

@@ -141,7 +141,7 @@ function normalizeFilters(input) {
     visitDate: String(input.visitDate ?? ''),
     visitTime: String(input.visitTime ?? ''),
     excludes: Array.isArray(input.excludes) ? input.excludes.map((v) => String(v).slice(0, 80)).slice(0, 10) : [],
-    radius: Number.isFinite(radius) ? Math.min(Math.max(radius, 100), 3000) : 500,
+    radius: Number.isFinite(radius) ? Math.min(Math.max(radius, 100), 5000) : 500,
     center: { lat, lng },
   }
 }

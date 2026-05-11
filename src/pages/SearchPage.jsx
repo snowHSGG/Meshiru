@@ -12,7 +12,7 @@ export default function SearchPage() {
   const [scene, setScene] = useState('')
   const [priceLevels, setPriceLevels] = useState([])
   const [visitDate, setVisitDate] = useState(todayStr())
-  const [visitTime, setVisitTime] = useState(currentHourStr())
+  const [visitTime, setVisitTime] = useState('')
   const [locMode, setLocMode] = useState('current')
   const [areaText, setAreaText] = useState('')
   const [area, setArea] = useState(null)
@@ -128,7 +128,14 @@ function switchToCurrentLocation() {
               />
             </div>
             <div className="datetime-field">
-              <label className="datetime-label">時間</label>
+              <div className="datetime-label-row">
+                <label className="datetime-label">時間</label>
+                <button
+                  type="button"
+                  className="time-now-btn"
+                  onClick={() => setVisitTime(currentHourStr())}
+                >現在時刻</button>
+              </div>
               <select
                 className="datetime-input"
                 value={visitTime}

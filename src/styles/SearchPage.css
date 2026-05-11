@@ -115,6 +115,33 @@
   letter-spacing: 0.05em;
 }
 
+.datetime-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.time-now-btn {
+  padding: 0.16rem 0.45rem;
+  background: #11100d;
+  border: 1px solid #3a3328;
+  border-radius: 2px;
+  color: #d8d2c7;
+  font-size: 0.68rem;
+  font-family: inherit;
+  line-height: 1.2;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.time-now-btn:hover {
+  background: #17140f;
+  border-color: #d6a12f;
+  color: #f7f0e3;
+}
+
 .datetime-input {
   background: transparent;
   border: 1px solid #2a2a2a;
