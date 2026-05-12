@@ -18,61 +18,37 @@ const LEVEL_TO_HP_CODES = {
 }
 
 const GOOGLE_EXPENSIVE_LEVELS = ['PRICE_LEVEL_EXPENSIVE', 'PRICE_LEVEL_VERY_EXPENSIVE']
-const FOOD_PLACE_TYPES = new Set([
-  'acai_shop',
+const RESTAURANT_PLACE_TYPES = new Set([
   'afghani_restaurant',
   'african_restaurant',
   'american_restaurant',
   'asian_restaurant',
-  'bagel_shop',
-  'bakery',
-  'bar',
   'bar_and_grill',
   'barbecue_restaurant',
   'brazilian_restaurant',
   'breakfast_restaurant',
   'brunch_restaurant',
   'buffet_restaurant',
-  'cafe',
-  'cafeteria',
-  'candy_store',
-  'cat_cafe',
   'chinese_restaurant',
-  'chocolate_factory',
-  'chocolate_shop',
-  'coffee_shop',
-  'confectionery',
-  'deli',
   'dessert_restaurant',
-  'dessert_shop',
   'diner',
-  'dog_cafe',
-  'donut_shop',
   'fast_food_restaurant',
   'fine_dining_restaurant',
-  'food',
-  'food_court',
   'french_restaurant',
   'greek_restaurant',
   'hamburger_restaurant',
-  'ice_cream_shop',
   'indian_restaurant',
   'indonesian_restaurant',
   'italian_restaurant',
   'japanese_restaurant',
-  'juice_shop',
   'korean_restaurant',
   'lebanese_restaurant',
-  'meal_delivery',
-  'meal_takeaway',
   'mediterranean_restaurant',
   'mexican_restaurant',
   'middle_eastern_restaurant',
   'pizza_restaurant',
-  'pub',
   'ramen_restaurant',
   'restaurant',
-  'sandwich_shop',
   'seafood_restaurant',
   'spanish_restaurant',
   'steak_house',
@@ -83,7 +59,42 @@ const FOOD_PLACE_TYPES = new Set([
   'vegan_restaurant',
   'vegetarian_restaurant',
   'vietnamese_restaurant',
+])
+const CAFE_PLACE_TYPES = new Set([
+  'acai_shop',
+  'bagel_shop',
+  'bakery',
+  'cafe',
+  'cafeteria',
+  'candy_store',
+  'cat_cafe',
+  'chocolate_factory',
+  'chocolate_shop',
+  'coffee_shop',
+  'confectionery',
+  'dessert_shop',
+  'dog_cafe',
+  'donut_shop',
+  'ice_cream_shop',
+  'juice_shop',
+  'sandwich_shop',
+  'tea_house',
+])
+const BAR_PLACE_TYPES = new Set([
+  'bar',
+  'pub',
   'wine_bar',
+])
+const TAKEAWAY_PLACE_TYPES = new Set([
+  'deli',
+  'food',
+  'food_court',
+  'meal_delivery',
+  'meal_takeaway',
+])
+const EXCLUDED_DEFAULT_TYPES = new Set([
+  'karaoke',
+  'night_club',
 ])
 const SHORT_WINDOW_MS = 10 * 60 * 1000
 const LONG_WINDOW_MS = 24 * 60 * 60 * 1000
@@ -304,7 +315,7 @@ async function callGoogleAPI({ query, priceLevels, center, radius, genre, typeOv
 
 function filterByRadius(places, center, maxRadius, genre) {
   return places.filter((p) => {
-    if (!isFoodPlace(p)) return false
+    if (!isFoodPlace(p, genre)) return false
     if (!['カフェ', 'アフタヌーンティー'].includes(genre) && p.servesDinner === false && p.servesLunch === false) return false
     if (p.location) {
       const dist = haversineDistance(center.lat, center.lng, p.location.latitude, p.location.longitude)
@@ -314,10 +325,21 @@ function filterByRadius(places, center, maxRadius, genre) {
   })
 }
 
-function isFoodPlace(place) {
+function isFoodPlace(place, genre) {
   const types = [place.primaryType, ...(place.types ?? [])].filter(Boolean)
   if (types.length === 0) return true
-  return types.some((type) => FOOD_PLACE_TYPES.has(type))
+
+  const genreText = String(genre ?? '').toLowerCase()
+  const allowsCafe = /カフェ|喫茶|コーヒー|珈琲|アフタヌーン|スイーツ|デザート|パン/.test(genreText)
+  const allowsBar = /バー|bar|パブ|pub|ワイン/.test(genreText)
+  const allowsTakeaway = /テイクアウト|持ち帰り|弁当|デリ|デリバリー/.test(genreText)
+
+  if (types.some((type) => EXCLUDED_DEFAULT_TYPES.has(type))) return false
+  if (types.some((type) => RESTAURANT_PLACE_TYPES.has(type))) return true
+  if (allowsCafe && types.some((type) => CAFE_PLACE_TYPES.has(type))) return true
+  if (allowsBar && types.some((type) => BAR_PLACE_TYPES.has(type))) return true
+  if (allowsTakeaway && types.some((type) => TAKEAWAY_PLACE_TYPES.has(type))) return true
+  return false
 }
 
 async function fetchGoogle({ query, queryAlt, priceLevels, center, radius, genre }) {
