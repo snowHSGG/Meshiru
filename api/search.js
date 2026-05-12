@@ -107,6 +107,8 @@ const FIELD_MASK = [
   'places.websiteUri',
   'places.googleMapsUri',
   'places.photos',
+  'places.servesDinner',
+  'places.servesLunch',
   'places.regularOpeningHours',
 ].join(',')
 
@@ -303,6 +305,7 @@ async function callGoogleAPI({ query, priceLevels, center, radius, genre, typeOv
 function filterByRadius(places, center, maxRadius, genre) {
   return places.filter((p) => {
     if (!isFoodPlace(p)) return false
+    if (!['カフェ', 'アフタヌーンティー'].includes(genre) && p.servesDinner === false && p.servesLunch === false) return false
     if (p.location) {
       const dist = haversineDistance(center.lat, center.lng, p.location.latitude, p.location.longitude)
       if (dist > maxRadius) return false
