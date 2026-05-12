@@ -388,9 +388,9 @@ function switchToCurrentLocation() {
                       {priceRange && (
                         <p className="card-price-range">{priceRange} / 人</p>
                       )}
-                      {(place.editorialSummary || place.hotpepperCatch) && (
+                      {place.hotpepperCatch && (
                         <p className="card-summary">
-                          {place.editorialSummary?.text ?? place.hotpepperCatch}
+                          {place.hotpepperCatch}
                         </p>
                       )}
                       <p className="card-address">{place.formattedAddress}</p>

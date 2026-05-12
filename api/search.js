@@ -33,14 +33,11 @@ const FIELD_MASK = [
   'places.userRatingCount',
   'places.formattedAddress',
   'places.priceLevel',
-  'places.editorialSummary',
   'places.primaryTypeDisplayName',
   'places.location',
   'places.websiteUri',
   'places.googleMapsUri',
   'places.photos',
-  'places.servesDinner',
-  'places.servesLunch',
   'places.regularOpeningHours',
 ].join(',')
 
@@ -236,7 +233,6 @@ async function callGoogleAPI({ query, priceLevels, center, radius, genre, typeOv
 
 function filterByRadius(places, center, maxRadius, genre) {
   return places.filter((p) => {
-    if (!['カフェ', 'アフタヌーンティー'].includes(genre) && p.servesDinner === false && p.servesLunch === false) return false
     if (p.location) {
       const dist = haversineDistance(center.lat, center.lng, p.location.latitude, p.location.longitude)
       if (dist > maxRadius) return false
@@ -347,7 +343,6 @@ function shouldExcludePlace(place, matched, excludedMatch, excludeTerms) {
   const searchableText = [
     place.displayName?.text,
     place.primaryTypeDisplayName?.text,
-    place.editorialSummary?.text,
     place.formattedAddress,
     matched?.name,
     matched?.genre,
