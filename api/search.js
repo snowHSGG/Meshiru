@@ -1,6 +1,9 @@
 const API_KEY = process.env.GOOGLE_PLACES_API_KEY ?? process.env.VITE_GOOGLE_PLACES_API_KEY
 const HOTPEPPER_API_KEY = process.env.HOTPEPPER_API_KEY
 const GOOGLE_API_REFERER = process.env.GOOGLE_API_REFERER ?? 'https://meshishirube.vercel.app/'
+const SEARCH_DISABLED = process.env.SEARCH_DISABLED === 'true'
+const SEARCH_DISABLED_MESSAGE = process.env.SEARCH_DISABLED_MESSAGE
+  ?? '現在アクセスが集中しています。時間をおいてからもう一度お試しください。'
 
 const GENRE_TO_TYPE = {
   'ラーメン': 'ramen_restaurant',
@@ -98,8 +101,8 @@ const EXCLUDED_DEFAULT_TYPES = new Set([
 ])
 const SHORT_WINDOW_MS = 10 * 60 * 1000
 const LONG_WINDOW_MS = 24 * 60 * 60 * 1000
-const SHORT_LIMIT = 30
-const LONG_LIMIT = 150
+const SHORT_LIMIT = 5
+const LONG_LIMIT = 30
 
 const rateBuckets = globalThis.__meshishirubeRateBuckets ?? new Map()
 globalThis.__meshishirubeRateBuckets = rateBuckets
@@ -127,6 +130,11 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST')
     return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  if (SEARCH_DISABLED) {
+    res.setHeader('Retry-After', '3600')
+    return res.status(503).json({ error: SEARCH_DISABLED_MESSAGE })
   }
 
   const rateLimit = checkRateLimit(getClientIp(req))
