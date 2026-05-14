@@ -7,6 +7,34 @@ import NotFoundPage from './pages/NotFoundPage'
 import BrandLogo from './components/BrandLogo'
 import './App.css'
 
+const SITE_CLOSED = import.meta.env.VITE_SITE_CLOSED === 'true'
+const SITE_CLOSED_MESSAGE = import.meta.env.VITE_SITE_CLOSED_MESSAGE
+  ?? 'Google APIの無料クレジット残高が少なくなったため、検索機能を一時停止しています。再開まで少しお待ちください。'
+
+function ClosedPage() {
+  return (
+    <div className="page">
+      <header className="header">
+        <BrandLogo />
+      </header>
+      <main className="hero hero-closed">
+        <h1 className="hero-title">
+          <BrandLogo size="hero" />
+        </h1>
+        <p className="closed-label">一時停止中</p>
+        <p className="closed-message">{SITE_CLOSED_MESSAGE}</p>
+        <p className="closed-note">
+          予想以上に多くの方に使っていただき、運用コストの見直しをしています。
+        </p>
+      </main>
+      <footer className="footer">
+        <a className="footer-link" href="/terms">利用規約</a>
+        <a className="footer-link" href="/privacy">プライバシーポリシー</a>
+      </footer>
+    </div>
+  )
+}
+
 function TopPage() {
   const navigate = useNavigate()
   return (
@@ -30,6 +58,18 @@ function TopPage() {
 }
 
 export default function App() {
+  if (SITE_CLOSED) {
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="*" element={<ClosedPage />} />
+        </Routes>
+      </BrowserRouter>
+    )
+  }
+
   return (
     <BrowserRouter>
       <Routes>

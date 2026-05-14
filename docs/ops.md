@@ -38,6 +38,26 @@ SEARCH_DISABLED=false
 
 これにより、Google Places APIの追加利用を止めながら、アプリ自体は表示し続けられる。
 
+## サイト全体の一時停止表示
+
+トップページや検索画面も含めて一時停止中の表示に切り替えたい場合は、VercelのEnvironment Variablesに以下を設定する。
+
+```text
+VITE_SITE_CLOSED=true
+```
+
+任意で表示メッセージを変えたい場合は、以下も設定する。
+
+```text
+VITE_SITE_CLOSED_MESSAGE=Google APIの無料クレジット残高が少なくなったため、検索機能を一時停止しています。再開まで少しお待ちください。
+```
+
+設定後、対象環境を再デプロイする。
+
+再開する場合は `VITE_SITE_CLOSED=false` にするか、環境変数を削除して再デプロイする。
+
+`/terms` と `/privacy` は閉鎖中も表示できる。
+
 ## 検索回数制限
 
 検索API `/api/search` には、1IPごとの簡易レート制限を入れている。
