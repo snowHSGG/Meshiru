@@ -105,7 +105,8 @@
    - 候補が0件または1〜2件の場合、結果画面に次の検索範囲へ広げるボタンを出すようにした。
 2. 実検索レビュー。
    - Google Cloud側で `SearchTextRequest per day = 50`、`GetPhotoMediaRequest per day = 100` に制限済み。
-   - 本番は `SEARCH_DISABLED=true` のまま維持し、ローカルだけ実APIで確認する。
+   - 本番は `SEARCH_DISABLED=true` のまま維持する。
+   - `SEARCH_DISABLED` は `VERCEL_ENV=production` のときだけ有効にし、Previewでは実API検索できるようにした。
    - 確認シナリオ例: 新宿500mジャンルなし、新宿1kmイタリアン、渋谷1kmデート、梅田1km居酒屋、地方駅1kmジャンルなし、カフェ1km、記念日1km。
 3. 検索ログを入れる。
    - 検索回数、Google Text Search呼び出し回数、結果件数、範囲拡大ボタン押下回数、カフェ/記念日の2本検索回数を計測したい。

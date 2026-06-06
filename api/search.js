@@ -183,8 +183,12 @@ function getGoogleApiReferer() {
   return process.env.GOOGLE_API_REFERER ?? 'https://meshishirube.vercel.app/'
 }
 
+function isProductionDeployment() {
+  return process.env.VERCEL_ENV === 'production'
+}
+
 function isSearchDisabled() {
-  return process.env.SEARCH_DISABLED === 'true'
+  return isProductionDeployment() && process.env.SEARCH_DISABLED === 'true'
 }
 
 function getSearchDisabledMessage() {
