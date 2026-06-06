@@ -1,10 +1,3 @@
-const API_KEY = process.env.GOOGLE_PLACES_API_KEY ?? process.env.VITE_GOOGLE_PLACES_API_KEY
-const HOTPEPPER_API_KEY = process.env.HOTPEPPER_API_KEY
-const GOOGLE_API_REFERER = process.env.GOOGLE_API_REFERER ?? 'https://meshishirube.vercel.app/'
-const SEARCH_DISABLED = process.env.SEARCH_DISABLED === 'true'
-const SEARCH_DISABLED_MESSAGE = process.env.SEARCH_DISABLED_MESSAGE
-  ?? '現在アクセスが集中しています。時間をおいてからもう一度お試しください。'
-
 const GENRE_TO_TYPE = {
   'ラーメン': 'ramen_restaurant',
   '寿司': 'sushi_restaurant',
@@ -132,9 +125,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  if (SEARCH_DISABLED) {
+  if (isSearchDisabled()) {
     res.setHeader('Retry-After', '3600')
-    return res.status(503).json({ error: SEARCH_DISABLED_MESSAGE })
+    return res.status(503).json({ error: getSearchDisabledMessage() })
   }
 
   const rateLimit = checkRateLimit(getClientIp(req))
@@ -143,8 +136,8 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: '検索回数が多すぎます。少し時間をおいてから再検索してください。' })
   }
 
-  if (!API_KEY) return res.status(500).json({ error: 'Google API key is not configured.' })
-  if (!HOTPEPPER_API_KEY) return res.status(500).json({ error: 'HotPepper API key is not configured.' })
+  if (!getGoogleApiKey()) return res.status(500).json({ error: 'Google API key is not configured.' })
+  if (!getHotpepperApiKey()) return res.status(500).json({ error: 'HotPepper API key is not configured.' })
 
   try {
     const filters = normalizeFilters(parseBody(req.body))
@@ -176,6 +169,27 @@ export default async function handler(req, res) {
     console.error(error)
     return res.status(500).json({ error: '検索に失敗しました。' })
   }
+}
+
+function getGoogleApiKey() {
+  return process.env.GOOGLE_PLACES_API_KEY ?? process.env.VITE_GOOGLE_PLACES_API_KEY
+}
+
+function getHotpepperApiKey() {
+  return process.env.HOTPEPPER_API_KEY
+}
+
+function getGoogleApiReferer() {
+  return process.env.GOOGLE_API_REFERER ?? 'https://meshishirube.vercel.app/'
+}
+
+function isSearchDisabled() {
+  return process.env.SEARCH_DISABLED === 'true'
+}
+
+function getSearchDisabledMessage() {
+  return process.env.SEARCH_DISABLED_MESSAGE
+    ?? '現在アクセスが集中しています。時間をおいてからもう一度お試しください。'
 }
 
 function parseBody(body) {
@@ -243,7 +257,7 @@ function toHotpepperRange(radius) {
 
 async function searchHotpepper({ lat, lng, keyword, radius }) {
   const params = new URLSearchParams({
-    key: HOTPEPPER_API_KEY,
+    key: getHotpepperApiKey(),
     lat: lat ?? '35.6762',
     lng: lng ?? '139.6503',
     range: toHotpepperRange(radius ?? 500),
@@ -281,17 +295,6 @@ function haversineDistance(lat1, lng1, lat2, lng2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
-function offsetCenter(center, distanceM, bearingDeg) {
-  const R = 6371000
-  const lat1 = center.lat * Math.PI / 180
-  const lng1 = center.lng * Math.PI / 180
-  const bearing = bearingDeg * Math.PI / 180
-  const d = distanceM / R
-  const lat2 = Math.asin(Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(bearing))
-  const lng2 = lng1 + Math.atan2(Math.sin(bearing) * Math.sin(d) * Math.cos(lat1), Math.cos(d) - Math.sin(lat1) * Math.sin(lat2))
-  return { lat: lat2 * 180 / Math.PI, lng: lng2 * 180 / Math.PI }
-}
-
 async function callGoogleAPI({ query, priceLevels, center, radius, genre, typeOverride, textQueryOverride }) {
   const includedType = typeOverride !== undefined ? typeOverride : (GENRE_TO_TYPE[genre] ?? (genre ? null : 'restaurant'))
   const body = {
@@ -311,9 +314,9 @@ async function callGoogleAPI({ query, priceLevels, center, radius, genre, typeOv
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Goog-Api-Key': API_KEY,
+      'X-Goog-Api-Key': getGoogleApiKey(),
       'X-Goog-FieldMask': FIELD_MASK,
-      Referer: GOOGLE_API_REFERER,
+      Referer: getGoogleApiReferer(),
     },
     body: JSON.stringify(body),
   })
@@ -370,25 +373,7 @@ async function fetchGoogle({ query, queryAlt, priceLevels, center, radius, genre
     return true
   })
 
-  const filtered = filterByRadius(places, center, radius, genre)
-  if (filtered.length >= 10) return filtered
-
-  const offsetDist = radius * 0.5
-  const offsetPlaces = (await Promise.all(
-    [0, 90, 180, 270].flatMap((bearing) =>
-      calls.map(({ typeOverride, textQueryOverride }) =>
-        callGoogleAPI({ query, priceLevels, center: offsetCenter(center, offsetDist, bearing), radius, genre, typeOverride, textQueryOverride })
-      )
-    )
-  )).flat()
-
-  const newPlaces = offsetPlaces.filter((p) => {
-    if (!p.id || seen.has(p.id)) return false
-    seen.add(p.id)
-    return true
-  })
-
-  return filterByRadius([...places, ...newPlaces], center, radius, genre)
+  return filterByRadius(places, center, radius, genre)
 }
 
 function isOpenAt(periods, dateStr, timeStr) {

@@ -19,6 +19,15 @@ const GOOGLE_PRICE_RANGE = {
 
 const RANK_COLORS = ['#c9a227', '#8a8a8a', '#a0522d']
 
+function getNextRadiusValue(radius) {
+  const currentIndex = RADIUS_OPTIONS.findIndex((r) => r.value === radius)
+  return RADIUS_OPTIONS[currentIndex + 1]?.value ?? null
+}
+
+function getRadiusLabel(radius) {
+  return RADIUS_OPTIONS.find((r) => r.value === radius)?.label ?? `${radius}m`
+}
+
 function MapBoundsFitter({ searchCenter, radius }) {
   const map = useMap()
   useEffect(() => {
@@ -103,6 +112,27 @@ export default function ResultsPage() {
     runSearch({ genre, scene, priceLevels, visitDate, visitTime, locMode, area: resolvedArea, excludes, radius })
   }
 
+  async function handleExpandRadius() {
+    const nextRadius = getNextRadiusValue(radius)
+    if (!nextRadius) return
+
+    let resolvedArea = area
+    if (locMode === 'area' && areaText.trim() && !resolvedArea) {
+      setGeoLoading(true)
+      resolvedArea = await geocodeArea(areaText.trim())
+      setGeoLoading(false)
+      if (!resolvedArea) {
+        setGeoError('場所が見つかりませんでした。')
+        return
+      }
+      setArea(resolvedArea)
+      setGeoError('')
+    }
+
+    setRadius(nextRadius)
+    runSearch({ genre, scene, priceLevels, visitDate, visitTime, locMode, area: resolvedArea, excludes, radius: nextRadius })
+  }
+
 function switchToCurrentLocation() {
     setLocMode('current')
     setArea(null)
@@ -148,6 +178,8 @@ function switchToCurrentLocation() {
     : (area ? { lat: area.lat, lng: area.lng } : { lat: 35.6762, lng: 139.6503 })
 
   const mapKey = results.map((r) => r.googleMapsUri).join(',')
+  const nextRadius = getNextRadiusValue(radius)
+  const showFewResultsPrompt = !loading && !error && results.length > 0 && results.length < 3
 
   return (
     <div className="page">
@@ -347,9 +379,27 @@ function switchToCurrentLocation() {
           {!loading && !error && results.length === 0 && (
             <div className="results-status">
               <p>条件に合うお店が見つかりませんでした。</p>
-              <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#444' }}>
-                検索条件を変更してみてください。
-              </p>
+              {nextRadius ? (
+                <button className="expand-search-btn" onClick={handleExpandRadius}>
+                  {getRadiusLabel(nextRadius)}まで広げる
+                </button>
+              ) : (
+                <p className="results-status-note">
+                  検索条件を変更してみてください。
+                </p>
+              )}
+            </div>
+          )}
+          {showFewResultsPrompt && (
+            <div className="few-results-prompt">
+              <p>候補が{results.length}件だけ見つかりました。</p>
+              {nextRadius ? (
+                <button className="expand-search-btn" onClick={handleExpandRadius}>
+                  {getRadiusLabel(nextRadius)}まで広げる
+                </button>
+              ) : (
+                <span className="few-results-note">条件を少しゆるめると候補が増えるかもしれません。</span>
+              )}
             </div>
           )}
           <div className="cards">

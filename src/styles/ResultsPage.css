@@ -196,6 +196,53 @@
   line-height: 1.7;
 }
 
+.results-status-note {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: #444;
+}
+
+.few-results-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid #2d2d2d;
+  padding: 0.85rem 1rem;
+  color: #b8b8b8;
+  font-size: 0.86rem;
+}
+
+.few-results-note {
+  color: #666;
+  font-size: 0.8rem;
+}
+
+.expand-search-btn {
+  flex-shrink: 0;
+  background: #f0f0f0;
+  border: 1px solid #f0f0f0;
+  color: #111;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.45rem 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.expand-search-btn:hover {
+  background: #d8d8d8;
+  border-color: #d8d8d8;
+}
+
+@media (max-width: 560px) {
+  .few-results-prompt {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
 
 /* ── カード ── */
 

@@ -1,7 +1,12 @@
 const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY
+const USE_MOCK_SEARCH = import.meta.env.VITE_MOCK_SEARCH === 'true'
 
 export async function searchRestaurants({ genre, scene, priceLevels, visitDate, visitTime, locMode, area, excludes, radius }) {
   const center = await resolveCenter({ locMode, area })
+  if (USE_MOCK_SEARCH) {
+    return { places: buildMockPlaces(center, radius), center }
+  }
+
   const response = await fetch('/api/search', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -64,4 +69,57 @@ export async function geocodeArea(text) {
 
 export function getPhotoUrl(photoName) {
   return `https://places.googleapis.com/v1/${photoName}/media?maxHeightPx=400&maxWidthPx=800&key=${API_KEY}`
+}
+
+function buildMockPlaces(center, radius) {
+  const count = radius <= 500 ? 2 : 3
+  const basePlaces = [
+    {
+      id: 'mock-place-1',
+      displayName: { text: 'めししるべ食堂' },
+      rating: 4.5,
+      userRatingCount: 328,
+      formattedAddress: '東京都新宿区西新宿1-1-1',
+      priceLevel: 'PRICE_LEVEL_MODERATE',
+      primaryTypeDisplayName: { text: '定食屋' },
+      location: { latitude: center.lat + 0.001, longitude: center.lng + 0.001 },
+      googleMapsUri: 'https://maps.google.com/?q=35.690921,139.700258',
+      websiteUri: 'https://example.com',
+      hotpepperCatch: '仕事帰りでも入りやすい、落ち着いた和食のお店。',
+      hotpepperBudget: '2001〜3000円',
+      hotpepperUrl: null,
+    },
+    {
+      id: 'mock-place-2',
+      displayName: { text: '路地裏ビストロ 灯' },
+      rating: 4.3,
+      userRatingCount: 184,
+      formattedAddress: '東京都新宿区新宿3-1-1',
+      priceLevel: 'PRICE_LEVEL_EXPENSIVE',
+      primaryTypeDisplayName: { text: 'ビストロ' },
+      location: { latitude: center.lat - 0.0012, longitude: center.lng + 0.0008 },
+      googleMapsUri: 'https://maps.google.com/?q=35.690100,139.704000',
+      websiteUri: 'https://example.com',
+      hotpepperCatch: '少し特別な夜に使いやすい小さなビストロ。',
+      hotpepperBudget: '4001〜5000円',
+      hotpepperUrl: null,
+    },
+    {
+      id: 'mock-place-3',
+      displayName: { text: '炭火キッチン こがね' },
+      rating: 4.2,
+      userRatingCount: 512,
+      formattedAddress: '東京都新宿区歌舞伎町1-1-1',
+      priceLevel: 'PRICE_LEVEL_MODERATE',
+      primaryTypeDisplayName: { text: '居酒屋' },
+      location: { latitude: center.lat + 0.0003, longitude: center.lng - 0.0014 },
+      googleMapsUri: 'https://maps.google.com/?q=35.694000,139.702000',
+      websiteUri: 'https://example.com',
+      hotpepperCatch: '焼き物と小皿料理が強い、気軽な一軒。',
+      hotpepperBudget: '3001〜4000円',
+      hotpepperUrl: null,
+    },
+  ]
+
+  return basePlaces.slice(0, count)
 }
