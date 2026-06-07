@@ -80,20 +80,20 @@ export default function ResultsPage() {
 
   const results = allResults.filter((p) => !excludedIds.includes(p.id ?? p.googleMapsUri)).slice(0, 3)
 
-  function runSearch(filters) {
+  function runSearch(filters, searchTrigger = 'manual') {
     setLoading(true)
     setError(null)
     setSelected(null)
     setExcludedIds([])
     window.scrollTo(0, 0)
-    searchRestaurants(filters)
+    searchRestaurants({ ...filters, searchTrigger })
       .then(({ places, center }) => { setAllResults(places); setSearchCenter(center) })
       .catch((err) => setError(err.message || '検索に失敗しました。'))
       .finally(() => setLoading(false))
   }
 
   useEffect(() => {
-    runSearch({ genre, scene, priceLevels, visitDate, visitTime, locMode, area, excludes, radius })
+    runSearch({ genre, scene, priceLevels, visitDate, visitTime, locMode, area, excludes, radius }, 'initial')
   }, [])
 
   async function handleResearch() {
@@ -109,7 +109,7 @@ export default function ResultsPage() {
       setArea(resolvedArea)
       setGeoError('')
     }
-    runSearch({ genre, scene, priceLevels, visitDate, visitTime, locMode, area: resolvedArea, excludes, radius })
+    runSearch({ genre, scene, priceLevels, visitDate, visitTime, locMode, area: resolvedArea, excludes, radius }, 'manual')
   }
 
   async function handleExpandRadius() {
@@ -130,7 +130,7 @@ export default function ResultsPage() {
     }
 
     setRadius(nextRadius)
-    runSearch({ genre, scene, priceLevels, visitDate, visitTime, locMode, area: resolvedArea, excludes, radius: nextRadius })
+    runSearch({ genre, scene, priceLevels, visitDate, visitTime, locMode, area: resolvedArea, excludes, radius: nextRadius }, 'expand_radius')
   }
 
 function switchToCurrentLocation() {

@@ -1,7 +1,7 @@
 const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY
 const USE_MOCK_SEARCH = import.meta.env.VITE_MOCK_SEARCH === 'true'
 
-export async function searchRestaurants({ genre, scene, priceLevels, visitDate, visitTime, locMode, area, excludes, radius }) {
+export async function searchRestaurants({ genre, scene, priceLevels, visitDate, visitTime, locMode, area, excludes, radius, searchTrigger }) {
   const center = await resolveCenter({ locMode, area })
   if (USE_MOCK_SEARCH) {
     return { places: buildMockPlaces(center, radius), center }
@@ -10,7 +10,7 @@ export async function searchRestaurants({ genre, scene, priceLevels, visitDate, 
   const response = await fetch('/api/search', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ genre, scene, priceLevels, visitDate, visitTime, center, excludes, radius }),
+    body: JSON.stringify({ genre, scene, priceLevels, visitDate, visitTime, center, excludes, radius, searchTrigger }),
   })
   const data = await response.json().catch(() => ({}))
 

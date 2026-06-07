@@ -120,6 +120,10 @@ const FIELD_MASK = [
 ].join(',')
 
 export default async function handler(req, res) {
+  const requestId = createRequestId()
+  const startedAt = Date.now()
+  let filtersForLog = null
+
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST')
     return res.status(405).json({ error: 'Method not allowed' })
@@ -141,22 +145,30 @@ export default async function handler(req, res) {
 
   try {
     const filters = normalizeFilters(parseBody(req.body))
+    filtersForLog = filters
     const query = buildQuery(filters)
     const queryAlt = filters.scene === '記念日' ? buildQuery({ ...filters, scene: '誕生日' }) : null
     const excludeKeywords = [...new Set((filters.excludes ?? []).map((t) => t.trim()).filter(Boolean))]
 
-    const [googleResults, hotpepperResults, excludedHotpepperResults] = await Promise.all([
+    const [googleSearch, hotpepperSearch, excludedHotpepperSearches] = await Promise.all([
       fetchGoogle({ query, queryAlt, priceLevels: filters.priceLevels, center: filters.center, radius: filters.radius, genre: filters.genre }),
-      searchHotpepper({ lat: filters.center.lat, lng: filters.center.lng, keyword: query, radius: filters.radius }).catch(() => []),
+      searchHotpepper({ lat: filters.center.lat, lng: filters.center.lng, keyword: query, radius: filters.radius })
+        .then((shops) => ({ shops, ok: true }))
+        .catch((error) => ({ shops: [], ok: false, error: error.message })),
       Promise.all(
         excludeKeywords.map((keyword) =>
-          searchHotpepper({ lat: filters.center.lat, lng: filters.center.lng, keyword, radius: filters.radius }).catch(() => [])
+          searchHotpepper({ lat: filters.center.lat, lng: filters.center.lng, keyword, radius: filters.radius })
+            .then((shops) => ({ shops, ok: true }))
+            .catch((error) => ({ shops: [], ok: false, error: error.message }))
         )
-      ).then((results) => results.flat()),
+      ),
     ])
 
+    const hotpepperResults = hotpepperSearch.shops
+    const excludedHotpepperResults = excludedHotpepperSearches.flatMap((result) => result.shops)
+
     const places = mergeResults(
-      googleResults,
+      googleSearch.places,
       hotpepperResults,
       excludedHotpepperResults,
       filters.priceLevels,
@@ -164,11 +176,35 @@ export default async function handler(req, res) {
       filters.visitTime,
       filters.excludes
     )
+    logSearchEvent('search.completed', {
+      requestId,
+      durationMs: Date.now() - startedAt,
+      filters,
+      google: googleSearch.summary,
+      hotpepper: {
+        callCount: 1 + excludeKeywords.length,
+        primaryCount: hotpepperResults.length,
+        excludeCallCount: excludeKeywords.length,
+        excludeResultCount: excludedHotpepperResults.length,
+        failedCallCount: [hotpepperSearch, ...excludedHotpepperSearches].filter((result) => !result.ok).length,
+      },
+      finalCount: places.length,
+    })
     return res.status(200).json({ places, center: filters.center })
   } catch (error) {
+    logSearchEvent('search.failed', {
+      requestId,
+      durationMs: Date.now() - startedAt,
+      filters: filtersForLog,
+      error: error.message,
+    })
     console.error(error)
     return res.status(500).json({ error: '検索に失敗しました。' })
   }
+}
+
+function createRequestId() {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 }
 
 function getGoogleApiKey() {
@@ -230,6 +266,36 @@ function checkRateLimit(ip) {
   return { ok: true }
 }
 
+function logSearchEvent(event, payload) {
+  const filters = payload.filters
+  const logPayload = {
+    event,
+    requestId: payload.requestId,
+    durationMs: payload.durationMs,
+    environment: process.env.VERCEL_ENV ?? 'local',
+    searchTrigger: filters?.searchTrigger ?? 'unknown',
+    filters: filters ? {
+      radius: filters.radius,
+      genrePresent: Boolean(filters.genre),
+      scenePresent: Boolean(filters.scene),
+      priceLevelCount: filters.priceLevels?.length ?? 0,
+      excludeCount: filters.excludes?.length ?? 0,
+      visitDatePresent: Boolean(filters.visitDate),
+      visitTimePresent: Boolean(filters.visitTime),
+      centerApprox: {
+        lat: Math.round(filters.center.lat * 1000) / 1000,
+        lng: Math.round(filters.center.lng * 1000) / 1000,
+      },
+    } : null,
+    google: payload.google,
+    hotpepper: payload.hotpepper,
+    finalCount: payload.finalCount,
+    error: payload.error,
+  }
+
+  console.log(JSON.stringify(logPayload))
+}
+
 function normalizeFilters(input) {
   const radius = Number(input.radius)
   const lat = Number(input.center?.lat)
@@ -248,7 +314,14 @@ function normalizeFilters(input) {
     excludes: Array.isArray(input.excludes) ? input.excludes.map((v) => String(v).slice(0, 80)).slice(0, 10) : [],
     radius: Number.isFinite(radius) ? Math.min(Math.max(radius, 100), 5000) : 500,
     center: { lat, lng },
+    searchTrigger: normalizeSearchTrigger(input.searchTrigger),
   }
+}
+
+function normalizeSearchTrigger(value) {
+  const trigger = String(value ?? '')
+  if (['initial', 'manual', 'expand_radius'].includes(trigger)) return trigger
+  return 'unknown'
 }
 
 function toHotpepperRange(radius) {
@@ -364,20 +437,30 @@ async function fetchGoogle({ query, queryAlt, priceLevels, center, radius, genre
     ? [{}, { textQueryOverride: queryAlt }]
     : [{}]
 
-  const initialResults = (await Promise.all(
+  const rawResults = (await Promise.all(
     calls.map(({ typeOverride, textQueryOverride }) =>
       callGoogleAPI({ query, priceLevels, center, radius, genre, typeOverride, textQueryOverride })
     )
   )).flat()
 
   const seen = new Set()
-  const places = initialResults.filter((p) => {
+  const uniquePlaces = rawResults.filter((p) => {
     if (!p.id || seen.has(p.id)) return false
     seen.add(p.id)
     return true
   })
 
-  return filterByRadius(places, center, radius, genre)
+  const places = filterByRadius(uniquePlaces, center, radius, genre)
+  return {
+    places,
+    summary: {
+      callCount: calls.length,
+      rawCount: rawResults.length,
+      uniqueCount: uniquePlaces.length,
+      filteredCount: places.length,
+      multiSearchReason: genre === 'カフェ' ? 'cafe' : queryAlt ? 'anniversary' : null,
+    },
+  }
 }
 
 function isOpenAt(periods, dateStr, timeStr) {
