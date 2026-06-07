@@ -123,3 +123,17 @@
    - 公開再開前には必須。スタミナ制/チケット制はアイデアとして保留。
 9. マネタイズ実験。
    - スタミナ、追加検索チケット、サブスク、予約送客など。原価が見えてから検討する。
+
+## 2026-06-07 検証環境メモ
+
+- 検証はVercel Previewのstagingブランチで行う。
+- 固定Preview URLは `https://meshiru-git-staging-snowhsggs-projects.vercel.app/`。
+- 本番URLは `https://meshishirube.vercel.app/`。
+- 本番検索停止用の `SEARCH_DISABLED=true` は、コード側で `VERCEL_ENV=production` のときだけ効くようにした。
+- そのため、Previewに `SEARCH_DISABLED` が混ざっても `/api/search` は停止しない。
+- Previewで実検索するには、VercelのEnvironment Variablesで以下がPreviewにも設定されている必要がある。
+  - `VITE_GOOGLE_PLACES_API_KEY`
+  - `HOTPEPPER_API_KEY`
+- Google CloudのAPIキー制限には、Preview URL、本番URL、ローカル開発URLを登録する。
+- VercelのSensitive環境変数は保存後に値が表示されないため、空欄に見えても保存済みの可能性がある。ただし編集画面で空のまま保存すると値が消えるため注意。
+- 2026-06-07時点で、Previewではエリア候補、マップ、店舗検索まで動作確認済み。
