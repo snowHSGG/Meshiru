@@ -76,3 +76,7 @@ VITE_SITE_CLOSED_MESSAGE=Google APIの無料クレジット残高が少なくな
 ```
 
 この制限は、Google Places APIのクレジット消費を抑えるための防御策。アクセス状況に応じて `api/search.js` の `SHORT_LIMIT` と `LONG_LIMIT` を調整する。
+
+レート制限は `SEARCH_DISABLED` と同じく `VERCEL_ENV=production` のときだけ有効。Preview(stagingブランチ)やローカルでは回数に関係なく検索できる。
+
+429を返したときは、Vercel Logsに `search.rate_limited` のJSONログを出す。`rateLimit.window` が `short` なら10分制限、`long` なら24時間制限に当たっている。回数はIP単位で数え、関数インスタンスが温かい間はメモリに残るため、同じ回線からのPC/スマホの検索は合算される。

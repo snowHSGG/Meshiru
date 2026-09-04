@@ -134,10 +134,18 @@ export default async function handler(req, res) {
     return res.status(503).json({ error: getSearchDisabledMessage() })
   }
 
-  const rateLimit = checkRateLimit(getClientIp(req))
-  if (!rateLimit.ok) {
-    res.setHeader('Retry-After', String(Math.ceil(rateLimit.retryAfterMs / 1000)))
-    return res.status(429).json({ error: '検索回数が多すぎます。少し時間をおいてから再検索してください。' })
+  if (isRateLimitEnabled()) {
+    const rateLimit = checkRateLimit(getClientIp(req))
+    if (!rateLimit.ok) {
+      const retryAfterSec = Math.ceil(rateLimit.retryAfterMs / 1000)
+      logSearchEvent('search.rate_limited', {
+        requestId,
+        durationMs: Date.now() - startedAt,
+        rateLimit: { window: rateLimit.window, retryAfterSec },
+      })
+      res.setHeader('Retry-After', String(retryAfterSec))
+      return res.status(429).json({ error: '検索回数が多すぎます。少し時間をおいてから再検索してください。' })
+    }
   }
 
   if (!getGoogleApiKey()) return res.status(500).json({ error: 'Google API key is not configured.' })
@@ -227,6 +235,10 @@ function isSearchDisabled() {
   return isProductionDeployment() && process.env.SEARCH_DISABLED === 'true'
 }
 
+function isRateLimitEnabled() {
+  return isProductionDeployment()
+}
+
 function getSearchDisabledMessage() {
   return process.env.SEARCH_DISABLED_MESSAGE
     ?? '現在アクセスが集中しています。時間をおいてからもう一度お試しください。'
@@ -253,12 +265,12 @@ function checkRateLimit(ip) {
   if (shortCount >= SHORT_LIMIT) {
     const oldestShort = recent.find((time) => now - time < SHORT_WINDOW_MS) ?? now
     rateBuckets.set(ip, recent)
-    return { ok: false, retryAfterMs: SHORT_WINDOW_MS - (now - oldestShort) }
+    return { ok: false, window: 'short', retryAfterMs: SHORT_WINDOW_MS - (now - oldestShort) }
   }
 
   if (recent.length >= LONG_LIMIT) {
     rateBuckets.set(ip, recent)
-    return { ok: false, retryAfterMs: LONG_WINDOW_MS - (now - recent[0]) }
+    return { ok: false, window: 'long', retryAfterMs: LONG_WINDOW_MS - (now - recent[0]) }
   }
 
   recent.push(now)
@@ -290,6 +302,7 @@ function logSearchEvent(event, payload) {
     google: payload.google,
     hotpepper: payload.hotpepper,
     finalCount: payload.finalCount,
+    rateLimit: payload.rateLimit,
     error: payload.error,
   }
 
